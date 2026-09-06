@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
+import { loadJson } from '$lib/offline/net';
 import type { ShoppingRecord } from '$lib/types';
 
 export const load: PageLoad = async ({ parent, fetch }) => {
@@ -9,11 +10,5 @@ export const load: PageLoad = async ({ parent, fetch }) => {
 		redirect(302, '/app/household');
 	}
 
-	const res = await fetch('/api/shopping-records', { credentials: 'include' });
-
-	if (!res.ok) {
-		throw new Error(`GET /api/shopping-records failed with ${res.status}`);
-	}
-
-	return { records: (await res.json()) as ShoppingRecord[] };
+	return { records: (await loadJson<ShoppingRecord[]>('/api/shopping-records', fetch)) ?? [] };
 };

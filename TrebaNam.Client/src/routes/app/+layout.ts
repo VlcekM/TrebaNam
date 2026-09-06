@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { LayoutLoad } from './$types';
+import { loadJson, Unauthorized } from '$lib/offline/net';
 import type { Household, ShoppingList, User } from '$lib/types';
 import { userStore } from '$lib/stores/user';
 
@@ -7,56 +8,39 @@ import { userStore } from '$lib/stores/user';
 export const ssr = false;
 export const prerender = false;
 
-/** Bez domacnosti vracia API 204 s prazdnym telom - tu z toho robime undefined. */
-async function loadHousehold(fetch: typeof globalThis.fetch): Promise<Household | undefined> {
-	const res = await fetch('/api/households/me', { credentials: 'include' });
-
-	if (res.status === 204) {
-		return undefined;
-	}
-
-	if (!res.ok) {
-		throw new Error(`GET /api/households/me failed with ${res.status}`);
-	}
-
-	return (await res.json()) as Household;
-}
-
-/** Zoznamy domacnosti. Bez domacnosti nie su ziadne, takze API vracia prazdne pole. */
-async function loadLists(fetch: typeof globalThis.fetch): Promise<ShoppingList[]> {
-	const res = await fetch('/api/lists', { credentials: 'include' });
-
-	if (!res.ok) {
-		throw new Error(`GET /api/lists failed with ${res.status}`);
-	}
-
-	return (await res.json()) as ShoppingList[];
-}
-
 // Auth brana: bez platnej cookie posle /api/auth/me 401 a my cloveka poslem na Google.
 // Domacnost aj zoznamy sa nacitavaju tu, nie na stranke: prepinac zoznamov aj dialog na
 // pridanie veci ich potrebuju na kazdej obrazovke, nielen na tej so zoznamom.
+//
+// Vsetko ide cez loadJson, takze bez signalu appka ukaze to, co vedela naposledy. Prihlasenie
+// je jedina vec, ktora bez servera nejde - 401 je odpoved, nie vypadok, a posiela sa dalej.
 export const load: LayoutLoad = async ({
 	fetch,
 	url
 }): Promise<{ user: User; household?: Household; lists: ShoppingList[] }> => {
-	const res = await fetch('/api/auth/me', { credentials: 'include' });
+	let user: User | undefined;
 
-	if (res.status === 401) {
+	try {
+		user = await loadJson<User>('/api/auth/me', fetch);
+	} catch (error) {
+		if (!(error instanceof Unauthorized)) throw error;
+
 		// Cielovu adresu nesieme cez prihlasenie, inak by pozvankovy odkaz skoncil na /app.
 		const returnUrl = encodeURIComponent(url.pathname + url.search);
-		throw redirect(302, `/api/auth/login?returnUrl=${returnUrl}`);
+		redirect(302, `/api/auth/login?returnUrl=${returnUrl}`);
 	}
 
-	if (!res.ok) {
-		throw new Error(`GET /api/auth/me failed with ${res.status}`);
+	if (!user) {
+		throw new Error('GET /api/auth/me returned nothing');
 	}
-
-	const user = (await res.json()) as User;
 
 	userStore.set(user);
 
-	const [household, lists] = await Promise.all([loadHousehold(fetch), loadLists(fetch)]);
+	// Bez domacnosti vracia API 204 s prazdnym telom - z toho je tu undefined.
+	const [household, lists] = await Promise.all([
+		loadJson<Household>('/api/households/me', fetch),
+		loadJson<ShoppingList[]>('/api/lists', fetch)
+	]);
 
-	return { user, household, lists };
+	return { user, household, lists: lists ?? [] };
 };

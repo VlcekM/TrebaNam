@@ -12,6 +12,7 @@
 		updateList
 	} from '$lib/lists';
 	import { m } from '$lib/paraglide/messages.js';
+	import { sync } from '$lib/offline/state.svelte';
 	import type { ShoppingList } from '$lib/types';
 
 	// Bez zoznamu sa zaklada novy, so zoznamom sa upravuje ten otvoreny - polia su v oboch
@@ -181,6 +182,11 @@
 			<p class="text-sm font-semibold text-destructive">{m.error_generic()}</p>
 		{/if}
 
+		<!-- Zoznamy a skupiny sa menia pre celu domacnost, takze na ne treba spojenie. -->
+		{#if !sync.online}
+			<p class="text-sm leading-relaxed text-tn-meta">{m.offline_needs_connection()}</p>
+		{/if}
+
 		<div class="flex items-center gap-2">
 			<!-- Posledny zoznam sa zmazat neda: domacnost by nemala kam pridat prvu vec. -->
 			{#if list && canDelete}
@@ -208,7 +214,7 @@
 
 			<button
 				type="submit"
-				disabled={pending || !name.trim()}
+				disabled={pending || !name.trim() || !sync.online}
 				class="inline-flex h-11 cursor-pointer items-center rounded-lg bg-tn-primary px-5 font-bold text-primary-foreground transition hover:bg-tn-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				{#if pending && !confirming}

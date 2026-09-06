@@ -1,6 +1,8 @@
 <script lang="ts">
 	import AppHeader from '$lib/components/AppHeader.svelte';
 	import AppSidebar from '$lib/components/AppSidebar.svelte';
+	import OfflineBar from '$lib/components/OfflineBar.svelte';
+	import { watchNetwork } from '$lib/offline/sync';
 	import { connectHousehold } from '$lib/realtime';
 	import type { LayoutProps } from './$types';
 
@@ -9,6 +11,10 @@
 	// Spojenie visi na domacnosti, nie na jej obsahu - kazde nacitanie prinesie novy objekt
 	// a podla neho by sa hub odpajal a pripajal dokola.
 	const householdID = $derived(data.household?.id);
+
+	// Rad zapisov visi na appke, nie na domacnosti: odosiela sa aj to, co vzniklo pred tym,
+	// nez sa clovek k appke vratil.
+	$effect(watchNetwork);
 
 	// Zoznam je spolocny, tak ma byt spolocny aj naraz: kym je clovek v domacnosti, pocuvame
 	// hub a po kazdej zmene si obrazovky nacitaju svoje data znova.
@@ -28,6 +34,8 @@
 
 	<div class="flex min-w-0 flex-1 flex-col">
 		<AppHeader household={data.household} />
+
+		<OfflineBar />
 
 		{@render children?.()}
 	</div>

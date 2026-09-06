@@ -59,3 +59,27 @@ export function listMore(count: number) {
 			return m.app_home_list_more_other({ count });
 	}
 }
+
+/** Kolko zapisov caka na odoslanie, kym nie je signal. */
+export function waitingCount(count: number) {
+	switch (form(count)) {
+		case 'one':
+			return m.offline_waiting_one();
+		case 'few':
+			return m.offline_waiting_few({ count });
+		default:
+			return m.offline_waiting_other({ count });
+	}
+}
+
+/** Kolko z nich server odmietol - o stratenu zmenu sa clovek ma dozvediet. */
+export function rejectedCount(count: number) {
+	switch (form(count)) {
+		case 'one':
+			return m.offline_rejected_one();
+		case 'few':
+			return m.offline_rejected_few({ count });
+		default:
+			return m.offline_rejected_other({ count });
+	}
+}

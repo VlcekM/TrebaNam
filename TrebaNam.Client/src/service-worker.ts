@@ -1,75 +1,108 @@
 /// <reference types="@sveltejs/kit" />
+/// <reference no-default-lib="true"/>
+/// <reference lib="esnext" />
 /// <reference lib="webworker" />
 
-import { build, files, version } from '$service-worker';
+import { base, build, files, prerendered, version } from '$service-worker';
 
-// SvelteKit registruje tento subor automaticky (len v produkcii, nie v dev serveri).
-const worker = self as unknown as ServiceWorkerGlobalScope;
+/**
+ * Appka sa otvara na plochu telefonu a v obchode zvykne byt signal najhorsi, takze sa musi
+ * spustit aj bez neho. Service worker si preto odlozi cely shell - skripty, styly, pisma,
+ * ikony - a offline z nej appku poskladame.
+ *
+ * Data cez neho nechodia: /api/* sa neuklada vobec. Odpovede si odklada samotna appka
+ * (src/lib/offline), lebo len ona vie, co s nimi robit, ked sa medzitym nieco zmenilo.
+ */
+const sw = self as unknown as ServiceWorkerGlobalScope;
 
-// Nova verzia buildu = nova cache. Stare sa zmazu v 'activate'.
-const CACHE = `trebanam-${version}`;
+// Verzia je hash buildu, takze kazde nasadenie ma vlastnu cache a stara sa cela zahodi.
+const CacheName = `trebanam-${version}`;
 
-// build = hashovane JS/CSS, files = obsah static/. Oboje je immutable pre danu verziu.
-const PRECACHE = [...build, ...files];
+/** Prazdna stranka SPA. Kazda adresa pod /app sa kresli az v prehliadaci, takze staci jedna. */
+const Shell = `${base}/200.html`;
 
-// SPA shell z adapter-static. Nie je hashovany, takze ho drzime mimo PRECACHE -
-// bez neho by /app/* offline nemalo co zobrazit.
-const SHELL = '/200.html';
+const Precache = [...build, ...files, ...prerendered];
 
-worker.addEventListener('install', (event) => {
+const Precached = new Set(Precache);
+
+sw.addEventListener('install', (event) => {
 	event.waitUntil(
-		caches
-			.open(CACHE)
-			.then((cache) => cache.addAll([...PRECACHE, SHELL]))
-			.then(() => worker.skipWaiting())
-	);
-});
-
-worker.addEventListener('activate', (event) => {
-	event.waitUntil(
-		caches
-			.keys()
-			.then((keys) =>
-				Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))
-			)
-			.then(() => worker.clients.claim())
-	);
-});
-
-worker.addEventListener('fetch', (event) => {
-	const url = new URL(event.request.url);
-
-	// Cudzie domeny, non-GET a API nechavame uplne na pokoji - /api/* je stav na serveri
-	// a zle zacachovana odpoved by ukazovala neaktualny zoznam alebo cudzie prihlasenie.
-	if (event.request.method !== 'GET' || url.origin !== location.origin) return;
-	if (url.pathname.startsWith('/api/')) return;
-
-	event.respondWith(
 		(async () => {
-			const cache = await caches.open(CACHE);
+			const cache = await caches.open(CacheName);
 
-			// Assety buildu su hashovane, takze cache-first je bezpecne a najrychlejsie.
-			if (PRECACHE.includes(url.pathname)) {
-				const cached = await cache.match(url.pathname);
-				if (cached) return cached;
-			}
+			await cache.addAll(Precache);
 
+			// Shell nie je medzi assetmi - vyroba ho az adapter. Bez neho by offline start
+			// skoncil na chybovej stranke prehliadaca, ale nie je dovod kvoli nemu padnut.
 			try {
-				const response = await fetch(event.request);
-				if (response.ok && response.type === 'basic') {
-					cache.put(event.request, response.clone());
-				}
-				return response;
-			} catch (err) {
-				// Offline: skusime cache, pri navigacii padneme na SPA shell.
-				const cached = await cache.match(event.request);
-				if (cached) return cached;
-				if (event.request.mode === 'navigate') {
-					const shell = await cache.match('/200.html');
-					if (shell) return shell;
-				}
-				throw err;
+				await cache.add(Shell);
+			} catch {
+				// v developmente ziadny shell nie je
 			}
+
+			// Nova verzia ma platit hned. Navigacia chodi na siet ako prva, takze cerstve HTML
+			// si vzdy pyta assety, ktore k nemu patria.
+			await sw.skipWaiting();
 		})()
 	);
 });
+
+sw.addEventListener('activate', (event) => {
+	event.waitUntil(
+		(async () => {
+			for (const key of await caches.keys()) {
+				if (key !== CacheName) await caches.delete(key);
+			}
+
+			await sw.clients.claim();
+		})()
+	);
+});
+
+sw.addEventListener('fetch', (event) => {
+	const { request } = event;
+
+	if (request.method !== 'GET') return;
+
+	const url = new URL(request.url);
+
+	// Cudzie adresy a API si riesi appka sama - zapisy maju vlastny rad a data vlastne ulozisko.
+	if (url.origin !== location.origin || url.pathname.startsWith('/api')) return;
+
+	event.respondWith(answer(request, url));
+});
+
+async function answer(request: Request, url: URL): Promise<Response> {
+	const cache = await caches.open(CacheName);
+
+	// Assety maju hash v nazve, takze ulozena kopia je vzdy ta spravna a siet uz netreba.
+	if (Precached.has(url.pathname)) {
+		const hit = await cache.match(url.pathname);
+
+		if (hit) return hit;
+	}
+
+	try {
+		const fresh = await fetch(request);
+
+		// Podarene odpovede si drzime; 404 ani presmerovanie ukladat netreba.
+		if (fresh.ok && fresh.type === 'basic') {
+			cache.put(request, fresh.clone());
+		}
+
+		return fresh;
+	} catch (error) {
+		const hit = await cache.match(request);
+
+		if (hit) return hit;
+
+		// Otvorenie appky bez signalu: shell vie zvysok poskladat z ulozenych odpovedi.
+		if (request.mode === 'navigate') {
+			const shell = await cache.match(Shell);
+
+			if (shell) return shell;
+		}
+
+		throw error;
+	}
+}

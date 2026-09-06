@@ -183,5 +183,15 @@
 	"app_home_list_more_one": "and 1 more",
 	"app_home_list_more_few": "and {count} more",
 	"app_home_list_more_other": "and {count} more",
-	"language_switch": "Switch language"
+	"language_switch": "Switch language",
+	"offline_title": "Offline. What you change is kept here until the signal is back.",
+	"offline_waiting_one": "1 change waiting",
+	"offline_waiting_few": "{count} changes waiting",
+	"offline_waiting_other": "{count} changes waiting",
+	"offline_sending": "Sending what was waiting...",
+	"offline_rejected_one": "1 change could not be saved.",
+	"offline_rejected_few": "{count} changes could not be saved.",
+	"offline_rejected_other": "{count} changes could not be saved.",
+	"offline_rejected_dismiss": "Got it",
+	"offline_needs_connection": "This one needs a connection."
 }

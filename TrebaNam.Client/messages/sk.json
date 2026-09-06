@@ -183,5 +183,15 @@
 	"trip_delete_body": "{date} s {count} vecami zmizne navždy. Veci sa na zoznam nevrátia.",
 	"trip_delete_body_one": "{date} s 1 vecou zmizne navždy. Na zoznam sa nevráti.",
 	"trip_delete_confirm": "Zmazať",
-	"trip_delete_pending": "Mažem..."
+	"trip_delete_pending": "Mažem...",
+	"offline_title": "Bez pripojenia. Zmeny ostávajú tu, kým sa signál nevráti.",
+	"offline_waiting_one": "1 zmena čaká na odoslanie",
+	"offline_waiting_few": "{count} zmeny čakajú na odoslanie",
+	"offline_waiting_other": "{count} zmien čaká na odoslanie",
+	"offline_sending": "Odosielam, čo čakalo...",
+	"offline_rejected_one": "1 zmenu sa uložiť nepodarilo.",
+	"offline_rejected_few": "{count} zmeny sa uložiť nepodarilo.",
+	"offline_rejected_other": "{count} zmien sa uložiť nepodarilo.",
+	"offline_rejected_dismiss": "Rozumiem",
+	"offline_needs_connection": "Toto sa bez pripojenia nedá."
 }

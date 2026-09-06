@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
+import { loadJson } from '$lib/offline/net';
 import type { Item } from '$lib/types';
 
 /** Nakupuje sa vzdy z jedneho zoznamu; bez adresy plati ten prvy, rovnako ako na /app/list. */
@@ -16,13 +17,7 @@ export const load: PageLoad = async ({ parent, fetch, params }) => {
 		redirect(302, '/app/list');
 	}
 
-	const res = await fetch('/api/items', { credentials: 'include' });
-
-	if (!res.ok) {
-		throw new Error(`GET /api/items failed with ${res.status}`);
-	}
-
-	const items = (await res.json()) as Item[];
+	const items = (await loadJson<Item[]>('/api/items', fetch)) ?? [];
 
 	return { list, items: items.filter((item) => item.listID === list.id) };
 };

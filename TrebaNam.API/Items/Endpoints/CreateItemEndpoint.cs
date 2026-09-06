@@ -5,7 +5,16 @@ using TrebaNam.API.ShoppingLists;
 
 namespace TrebaNam.API.Items.Endpoints;
 
-public class CreateItemRequest : ItemFields;
+public class CreateItemRequest : ItemFields
+{
+    /// <summary>
+    /// Identifikator, ktory polozke dal klient. Bez pripojenia sa polozka pise do telefonu a na
+    /// server odchadza az neskor, takze jej meno musi vzniknut uz tam - a rovnaka poziadavka sa
+    /// da poslat druhy raz bez toho, aby v zozname pribudla dvakrat. Prazdna hodnota znamena
+    /// bezne pridanie a identifikator pridelime tu.
+    /// </summary>
+    public Guid ID { get; set; }
+}
 
 /// <summary>Prida polozku na jeden zo zoznamov domacnosti.</summary>
 public class CreateItemEndpoint(IDbContextFactory<DataContext> factory, HouseholdNotifier notifier)
@@ -33,6 +42,21 @@ public class CreateItemEndpoint(IDbContextFactory<DataContext> factory, Househol
 
         var (user, list) = found.Value;
 
+        // Poziadavka s uz znamym identifikatorom prisla druhy raz - prve poslanie preslo a odpoved
+        // sa cestou stratila. Vraciame to, co uz v zozname je; duplicitu nekontrolujeme, lebo tou
+        // duplicitou by bola prave tato polozka.
+        if (req.ID != Guid.Empty)
+        {
+            var already = await context.Items
+                .SingleOrDefaultAsync(i => i.ID == req.ID && i.HouseholdID == list.HouseholdID, ct);
+
+            if (already is not null)
+            {
+                await Send.OkAsync(already.ToDTO(), ct);
+                return;
+            }
+        }
+
         var codes = await ItemAccess.CategoryCodesAsync(list.HouseholdID, context, ct);
 
         if (!req.TryClean(codes, out var values, out var error))
@@ -48,6 +72,8 @@ public class CreateItemEndpoint(IDbContextFactory<DataContext> factory, Househol
 
         var item = new ItemEntity
         {
+            // Prazdny identifikator si doplni EF Core sam, tak ako pri kazdej inej entite.
+            ID = req.ID,
             HouseholdID = list.HouseholdID,
             ListID = list.ID,
             Name = values.Name,

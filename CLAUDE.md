@@ -207,6 +207,43 @@ every refresh would tear the connection down and build it again. Nothing in the 
 hub, and an optimistic override (the tick in shop mode) lives only for the length of its own
 request, so it can never hide what the other person just did.
 
+## Offline
+
+The app lives on a phone home screen and the shop is where the signal is worst, so it has to open
+and work with none. The service worker (`src/service-worker.ts`) keeps the shell - the scripts,
+the styles, Sora, the icons, the public page - and answers a navigation with the SPA fallback
+(`200.html`) when the network does not, so `/app/*` opens cold in flight mode. Nothing under
+`/api` goes through it: an answer about the list is not a file, and a stale one served as fresh
+would be a lie the screen cannot see through.
+
+The data is the app's own business (`src/lib/offline`). Every loader reads through `loadJson`,
+which puts each answer in IndexedDB under its own address and hands back the stored one when the
+request fails - what the household saw last is closer to the truth than an error page. An address
+that was never loaded and cannot be reached now reads as nothing rather than as a failure; a
+server that answers badly is still an error, because it did answer.
+
+Writes go through `write` (`src/lib/offline/queue.ts`). With a connection and an empty queue they
+go straight out and nothing about them changes. Without one they wait in the outbox and the
+stored answers are rewritten to what the server will say, so the list reads at once the way it
+will read once it is sent. The order is kept: once something waits, everything after it waits
+too, or a tick would arrive before the thing it ticks. A refusal from the server is never
+swallowed - a duplicate name still lands in the dialog it came from.
+
+The item and the trip get their id in the phone (`newID`), not on the server, and both endpoints
+answer an id they already hold with the row they already wrote. The same write can therefore be
+sent twice - the answer to the first one was lost on the way - without the thing appearing twice.
+
+The queue empties when the connection returns, when the app is opened again, and otherwise every
+twenty seconds while something waits (`watchNetwork`). A failed connection leaves it alone; an
+answer moves it on, even a refusing one, because the server has said its piece and repeating it
+changes nothing. Those are counted and said out loud in `OfflineBar`, the one strip above the
+screen: a change that was not saved must not disappear quietly. What the whole household shares
+beyond the items - the lists, the groups, the members - needs a connection and says so, because
+those are not decisions anybody makes in a shop.
+
+Signing out forgets both stores. On a shared phone one household's list is none of the next
+person's business.
+
 ## Styling
 
 The look comes from `design_handoff_trebanam/` - direction **1a "Cozy cream"**: white cards on

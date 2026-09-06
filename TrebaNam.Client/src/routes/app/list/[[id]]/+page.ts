@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
+import { loadJson } from '$lib/offline/net';
 import type { Item } from '$lib/types';
 
 /**
@@ -23,13 +24,7 @@ export const load: PageLoad = async ({ parent, fetch, params }) => {
 
 	// Polozky vsetkych zoznamov tahame naraz a triedime tu: prehlad ich aj tak potrebuje vsetky
 	// a jedno nacitanie je menej cakania nez jedno na kazdy zoznam.
-	const res = await fetch('/api/items', { credentials: 'include' });
-
-	if (!res.ok) {
-		throw new Error(`GET /api/items failed with ${res.status}`);
-	}
-
-	const items = (await res.json()) as Item[];
+	const items = (await loadJson<Item[]>('/api/items', fetch)) ?? [];
 
 	return { list, items: items.filter((item) => item.listID === list.id) };
 };

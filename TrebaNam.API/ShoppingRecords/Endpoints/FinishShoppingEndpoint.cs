@@ -7,6 +7,13 @@ namespace TrebaNam.API.ShoppingRecords.Endpoints;
 
 public class FinishShoppingRequest
 {
+    /// <summary>
+    /// Identifikator, ktory nakupu dal klient. V obchode byva signal najhorsi, takze ukoncenie
+    /// moze cakat v telefone a odist az potom - a moze odist aj dvakrat. Podla neho pozname, ze
+    /// ten isty nakup uz zapisany je. Prazdna hodnota znamena bezne ukoncenie.
+    /// </summary>
+    public Guid ID { get; set; }
+
     /// <summary>Ktory zoznam sa prave donakupil. Nakupuje sa po zoznamoch, nie cez vsetky naraz.</summary>
     public Guid ListID { get; set; }
 
@@ -45,6 +52,21 @@ public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory, Hous
 
         var (user, list) = found.Value;
 
+        // Ten isty nakup uz zapisany je - poziadavka len prisla druhy raz. Zoznam medzitym mohol
+        // ostat prazdny, takze bez tejto kontroly by druhy pokus skoncil na "nic nie je odskrtnute".
+        if (req.ID != Guid.Empty)
+        {
+            var already = await context.ShoppingRecords
+                .Include(r => r.Items)
+                .SingleOrDefaultAsync(r => r.ID == req.ID && r.HouseholdID == list.HouseholdID, ct);
+
+            if (already is not null)
+            {
+                await Send.OkAsync(already.ToDTO(), ct);
+                return;
+            }
+        }
+
         var bought = await context.Items
             .Where(i => i.ListID == list.ID && (i.IsChecked || i.BoughtQuantity != null))
             .OrderBy(i => i.CreatedAt)
@@ -59,6 +81,8 @@ public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory, Hous
 
         var record = new ShoppingRecordEntity
         {
+            // Prazdny identifikator si doplni EF Core sam, tak ako pri kazdej inej entite.
+            ID = req.ID,
             HouseholdID = list.HouseholdID,
             CompletedByUserID = user.ID,
             CompletedAt = DateTimeOffset.UtcNow,

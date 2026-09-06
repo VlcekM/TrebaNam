@@ -4,6 +4,7 @@
 	import { categoryName } from '$lib/categories';
 	import { createCategory, deleteCategory, renameCategory } from '$lib/households';
 	import { m } from '$lib/paraglide/messages.js';
+	import { sync } from '$lib/offline/state.svelte';
 	import type { Category } from '$lib/types';
 
 	// Bez skupiny sa zaklada nova, so skupinou sa premenuva alebo rusi ta otvorena. Pole je
@@ -115,13 +116,18 @@
 			<p class="text-sm font-semibold text-destructive">{m.error_generic()}</p>
 		{/if}
 
+		<!-- Zoznamy a skupiny sa menia pre celu domacnost, takze na ne treba spojenie. -->
+		{#if !sync.online}
+			<p class="text-sm leading-relaxed text-tn-meta">{m.offline_needs_connection()}</p>
+		{/if}
+
 		<div class="flex items-center gap-2">
 			{#if removable && category}
 				<button
 					type="button"
 					onclick={() =>
 						confirming ? run(() => deleteCategory(category.id)) : (confirming = true)}
-					disabled={pending}
+					disabled={pending || !sync.online}
 					class="inline-flex h-11 cursor-pointer items-center rounded-lg px-4 font-bold text-destructive transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					{#if pending && confirming}
@@ -142,7 +148,7 @@
 
 			<button
 				type="submit"
-				disabled={pending || !name.trim()}
+				disabled={pending || !name.trim() || !sync.online}
 				class="inline-flex h-11 cursor-pointer items-center rounded-lg bg-tn-primary px-5 font-bold text-primary-foreground transition hover:bg-tn-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				{#if pending && !confirming}
