@@ -1,0 +1,47 @@
+name: Build and redeploy
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Guard: workflow_dispatch can be fired from any branch — only master ships.
+    if: github.ref == 'refs/heads/master'
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Build the project
+      run: docker build . -t vlcekmato/trebanam
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3.3.0
+      with:
+        username: ${{ vars.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: push image
+      run: docker push vlcekmato/trebanam
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deploy
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --retry 3 --retry-connrefused --max-time 120 \
+            -X POST "https://hooks.cloudovna.eu/hooks/trebanam" \
+            -H "X-Deploy-Token: $DEPLOY_TOKEN"

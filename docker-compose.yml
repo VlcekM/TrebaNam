@@ -1,0 +1,53 @@
+# Serverovy compose. Bezi na hostovi, nie v CI - obraz sa len stahuje z Docker Hubu.
+name: trebanam
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: TrebaNam
+      POSTGRES_USER: trebanam
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      # Postgres 18 chce namontovany rodicovsky adresar, nie .../data
+      - ./db-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U trebanam -d TrebaNam']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  app:
+    image: vlcekmato/trebanam:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: Host=db;Database=TrebaNam;Username=trebanam;Password=${POSTGRES_PASSWORD}
+      Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:?}
+      Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:?}
+      Admin__Emails__0: ${ADMIN_EMAIL:-}
+    ports:
+      # len loopback; pred tym sedi Cloudflare tunel
+      - '${BIND_ADDR:-127.0.0.1}:${APP_PORT:-8080}:8080'
+    labels:
+      com.centurylinklabs.watchtower.enable: 'true'
+
+  watchtower:
+    image: nickfedor/watchtower:1.21.0
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_HTTP_API_UPDATE: 'true'
+      WATCHTOWER_HTTP_API_TOKEN: ${WATCHTOWER_TOKEN:?}
+      WATCHTOWER_HTTP_API_PERIODIC_POLLS: 'false'
+      WATCHTOWER_LABEL_ENABLE: 'true'
+      WATCHTOWER_CLEANUP: 'true'
+      REPO_USER: ${DOCKERHUB_USER:-}
+      REPO_PASS: ${DOCKERHUB_TOKEN:-}
+    ports:
+      - '${BIND_ADDR:-127.0.0.1}:${WATCHTOWER_PORT:-8081}:8080'

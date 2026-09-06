@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" class="%trebanam.theme%">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-title" content="TrebaNam" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<!-- Lista prehliadaca na mobile ma sediet s kremovym / tmavym pozadim appky. -->
+		<meta name="theme-color" content="#fbf8f3" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)" />
+		<!--
+			Font stahujeme uz odtialto, nie az ked dobehne CSS. Spolu s font-display: optional
+			(app.css) to znamena, ze text sa vykresli rovno v Sore alebo ostane v systemovom
+			fonte - nikdy neprebehne vymena z jedneho do druheho.
+		-->
+		<link
+			rel="preload"
+			href="/fonts/sora-latin-wght-normal.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+		<script>
+			// Bezi synchronne pred prvym vykreslenim, takze uzivatel nikdy neuvidi
+			// zablesk nespravnej temy. Prerender uz triedu do <html> doplni podla cookie,
+			// toto je poistka pre pripad cachovaneho HTML. Bez cookie ide light.
+			(() => {
+				try {
+					const cookie = document.cookie.match(/(?:^|;\s*)theme=(light|dark)/);
+					const dark = cookie ? cookie[1] === 'dark' : false;
+
+					document.documentElement.classList.toggle('dark', dark);
+					document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+				} catch {
+					// zostava trieda, ktoru poslal prerender
+				}
+			})();
+		</script>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

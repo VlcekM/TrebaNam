@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f0eee9}
+a{color:#C4553B}a:hover{color:#9c3f2c}
+</style>
+</helmet>
+<section id="t1" style="--acc: {{ acc }}; --font: {{ fontStack }}; --rad: {{ rad }}; --radSm: {{ radSm }}; min-height:100vh; padding:44px 48px 72px; box-sizing:border-box; font-family:system-ui,sans-serif; color:#1f1b24">
+  <div style="max-width:860px; margin-bottom:40px">
+    <div style="font:600 11px ui-monospace,Menlo,monospace; letter-spacing:0.1em; color:#8a8480; text-transform:uppercase; margin-bottom:10px">TrebaNam · household shopping list · UI mockups</div>
+    <h1 style="margin:0 0 12px; font-size:26px; font-weight:700; letter-spacing:-0.01em">Cozy, minimal, functional</h1>
+    <p style="margin:0; font-size:13.5px; line-height:1.65; color:#5c564f; max-width:680px">Assumptions: 2 adults (shown as Ana + Luka), prices in €, budget tracking built in from the start. Three visual directions below — the full flow underneath follows <a href="#1a" style="font:600 10.5px ui-monospace,Menlo,monospace; padding:2px 6px; background:rgba(0,0,0,0.08); border-radius:5px; text-decoration:none; color:#1f1b24">1a</a> and is live: checkboxes sync across the phone list, store mode and desktop. Open <strong>Tweaks</strong> for accent color, font style and roundness.</p>
+  </div>
+
+  <div style="font:600 11px ui-monospace,Menlo,monospace; color:#8a8480; margin-bottom:16px">DIRECTIONS — <a href="#1a" style="color:#1f1b24; text-decoration:none; background:rgba(0,0,0,0.08); border-radius:5px; padding:2px 6px">1a</a> CHOSEN ✓ (1b/1c kept for reference)</div>
+  <div style="display:flex; flex-wrap:wrap; gap:44px; align-items:flex-start; margin-bottom:64px">
+
+    <div id="1a" style="display:flex; flex-direction:column; gap:10px; scroll-margin-top:16px">
+      <div style="display:flex; align-items:baseline; gap:8px"><a href="#1a" style="font:600 10.5px ui-monospace,Menlo,monospace; padding:3px 7px; background:rgba(0,0,0,0.08); border-radius:5px; text-decoration:none; color:#1f1b24">1a</a><span style="font-size:11.5px; color:#6b655e">Cozy cream — warm, soft, rounded (used in the flow below)</span></div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+        <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; padding-top:70px; font-family:'Nunito',sans-serif; background:#FBF5EC">
+          <div style="padding:8px 22px 12px">
+            <div style="font-size:11px; font-weight:800; letter-spacing:0.1em; color:#C4553B">TREBANAM</div>
+            <div style="font-size:31px; font-weight:800; letter-spacing:-0.01em; color:#2b2320">Weekly groceries</div>
+            <div style="font-size:14px; color:#9b9186">8 to buy · est €46.00</div>
+          </div>
+          <div style="flex:1; overflow:hidden">
+            <div style="font-size:11px; font-weight:800; letter-spacing:0.08em; color:#9b9186; padding:6px 24px 7px">PRODUCE</div>
+            <div style="background:#fff; border-radius:18px; margin:0 16px; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+              <div style="display:flex; align-items:center; gap:12px; min-height:52px; padding:0 16px"><div style="width:25px;height:25px;border-radius:999px;border:2px solid #C4553B"></div><span style="flex:1; font-size:16px; font-weight:700; color:#2b2320">Bananas</span><span style="font-size:13px; color:#b3a99d">1 bunch</span></div>
+              <div style="display:flex; align-items:center; gap:12px; min-height:52px; padding:0 16px; border-top:1px solid rgba(80,50,30,0.07)"><div style="width:25px;height:25px;border-radius:999px;border:2px solid #C4553B"></div><span style="flex:1; font-size:16px; font-weight:700; color:#2b2320">Baby spinach</span><span style="font-size:13px; color:#b3a99d">2 bags</span></div>
+              <div style="display:flex; align-items:center; gap:12px; min-height:52px; padding:0 16px; border-top:1px solid rgba(80,50,30,0.07)"><div style="width:25px;height:25px;border-radius:999px;background:#C4553B;display:flex;align-items:center;justify-content:center"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1.5 5.2 4.4 8 10.5 1.8" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><span style="flex:1; font-size:16px; font-weight:700; color:#b3a99d; text-decoration:line-through">Avocados</span><span style="font-size:13px; color:#b3a99d">4</span></div>
+            </div>
+            <div style="font-size:11px; font-weight:800; letter-spacing:0.08em; color:#9b9186; padding:16px 24px 7px">DAIRY &amp; EGGS</div>
+            <div style="background:#fff; border-radius:18px; margin:0 16px; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+              <div style="display:flex; align-items:center; gap:12px; min-height:52px; padding:0 16px"><div style="width:25px;height:25px;border-radius:999px;border:2px solid #C4553B"></div><span style="flex:1; font-size:16px; font-weight:700; color:#2b2320">Milk 2%</span><span style="font-size:13px; color:#b3a99d">2 L</span></div>
+              <div style="display:flex; align-items:center; gap:12px; min-height:52px; padding:0 16px; border-top:1px solid rgba(80,50,30,0.07)"><div style="width:25px;height:25px;border-radius:999px;border:2px solid #C4553B"></div><span style="flex:1; font-size:16px; font-weight:700; color:#2b2320">Greek yogurt</span><span style="font-size:13px; color:#b3a99d">1 tub</span></div>
+            </div>
+          </div>
+          <div style="padding:10px 16px 44px">
+            <div style="display:flex; align-items:center; gap:10px; background:#fff; border-radius:20px; padding:8px 8px 8px 18px; box-shadow:0 4px 18px rgba(80,50,30,0.14)">
+              <span style="flex:1; font-size:15px; color:#b3a99d">Add an item…</span>
+              <div style="width:38px; height:38px; border-radius:15px; background:#C4553B; color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; line-height:1">+</div>
+            </div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <div id="1b" style="display:flex; flex-direction:column; gap:10px; scroll-margin-top:16px">
+      <div style="display:flex; align-items:baseline; gap:8px"><a href="#1b" style="font:600 10.5px ui-monospace,Menlo,monospace; padding:3px 7px; background:rgba(0,0,0,0.08); border-radius:5px; text-decoration:none; color:#1f1b24">1b</a><span style="font-size:11.5px; color:#6b655e">Crisp utility — denser, square, quiet</span></div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+        <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; padding-top:70px; font-family:'Sora',sans-serif; background:#F5F5F6">
+          <div style="padding:8px 20px 10px; display:flex; align-items:baseline; justify-content:space-between">
+            <div><div style="font-size:21px; font-weight:700; letter-spacing:-0.02em; color:#191722">Weekly groceries</div><div style="font-size:12.5px; color:#8c8996">8 to buy · est €46.00</div></div>
+            <span style="font-size:12.5px; font-weight:600; color:#7A4E8C">Edit</span>
+          </div>
+          <div style="flex:1; overflow:hidden; background:#fff; border-top:1px solid rgba(20,15,35,0.08)">
+            <div style="font-size:10.5px; font-weight:700; letter-spacing:0.1em; color:#8c8996; padding:14px 20px 6px">PRODUCE — 3</div>
+            <div style="display:flex; align-items:center; gap:12px; height:44px; padding:0 20px"><div style="width:20px;height:20px;border-radius:4px;border:1.5px solid #b9b6c2"></div><span style="flex:1; font-size:15px; color:#191722">Bananas</span><span style="font-size:12.5px; color:#8c8996">1 bunch · €1.20</span></div>
+            <div style="display:flex; align-items:center; gap:12px; height:44px; padding:0 20px; border-top:1px solid rgba(20,15,35,0.06)"><div style="width:20px;height:20px;border-radius:4px;border:1.5px solid #b9b6c2"></div><span style="flex:1; font-size:15px; color:#191722">Baby spinach</span><span style="font-size:12.5px; color:#8c8996">2 bags · €3.80</span></div>
+            <div style="display:flex; align-items:center; gap:12px; height:44px; padding:0 20px; border-top:1px solid rgba(20,15,35,0.06)"><div style="width:20px;height:20px;border-radius:4px;background:#7A4E8C;display:flex;align-items:center;justify-content:center"><svg width="11" height="9" viewBox="0 0 12 10"><path d="M1.5 5.2 4.4 8 10.5 1.8" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><span style="flex:1; font-size:15px; color:#b0adba; text-decoration:line-through">Avocados</span><span style="font-size:12.5px; color:#b0adba">4 · €4.50</span></div>
+            <div style="font-size:10.5px; font-weight:700; letter-spacing:0.1em; color:#8c8996; padding:16px 20px 6px">DAIRY &amp; EGGS — 2</div>
+            <div style="display:flex; align-items:center; gap:12px; height:44px; padding:0 20px"><div style="width:20px;height:20px;border-radius:4px;border:1.5px solid #b9b6c2"></div><span style="flex:1; font-size:15px; color:#191722">Milk 2%</span><span style="font-size:12.5px; color:#8c8996">2 L · €2.40</span></div>
+            <div style="display:flex; align-items:center; gap:12px; height:44px; padding:0 20px; border-top:1px solid rgba(20,15,35,0.06)"><div style="width:20px;height:20px;border-radius:4px;border:1.5px solid #b9b6c2"></div><span style="flex:1; font-size:15px; color:#191722">Greek yogurt</span><span style="font-size:12.5px; color:#8c8996">1 tub · €2.40</span></div>
+          </div>
+          <div style="padding:10px 16px 44px; background:#fff">
+            <div style="display:flex; align-items:center; gap:10px; background:#F5F5F6; border-radius:8px; padding:11px 14px; border:1px solid rgba(20,15,35,0.08)">
+              <span style="color:#7A4E8C; font-weight:600; font-size:16px">+</span>
+              <span style="flex:1; font-size:14px; color:#8c8996">Add item</span>
+            </div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <div id="1c" style="display:flex; flex-direction:column; gap:10px; scroll-margin-top:16px">
+      <div style="display:flex; align-items:baseline; gap:8px"><a href="#1c" style="font:600 10.5px ui-monospace,Menlo,monospace; padding:3px 7px; background:rgba(0,0,0,0.08); border-radius:5px; text-decoration:none; color:#1f1b24">1c</a><span style="font-size:11.5px; color:#6b655e">Color-block playful — tinted category cards</span></div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+        <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; padding-top:0; font-family:'Nunito',sans-serif; background:#FFFDF9">
+          <div style="background:#2F6F4F; padding:78px 22px 22px; border-radius:0 0 30px 30px; color:#fff">
+            <div style="font-size:12px; font-weight:800; letter-spacing:0.1em; opacity:0.8">TREBA NAM…</div>
+            <div style="font-size:29px; font-weight:800; margin-top:4px">Weekly groceries</div>
+            <div style="display:flex; gap:8px; margin-top:12px">
+              <span style="font-size:12.5px; font-weight:700; background:rgba(255,255,255,0.18); border-radius:999px; padding:5px 12px">8 to buy</span>
+              <span style="font-size:12.5px; font-weight:700; background:rgba(255,255,255,0.18); border-radius:999px; padding:5px 12px">est €46.00</span>
+            </div>
+          </div>
+          <div style="flex:1; overflow:hidden; padding:16px 16px 0; display:flex; flex-direction:column; gap:14px">
+            <div style="background:#EAF3E7; border-radius:24px; padding:6px 4px">
+              <div style="font-size:12px; font-weight:800; color:#2F6F4F; padding:8px 16px 2px">Produce</div>
+              <div style="display:flex; align-items:center; gap:12px; min-height:50px; padding:0 16px"><div style="width:27px;height:27px;border-radius:999px;border:3px solid #2F6F4F"></div><span style="flex:1; font-size:16px; font-weight:800; color:#22301f">Bananas</span><span style="font-size:13px; font-weight:700; color:#7d9377">1 bunch</span></div>
+              <div style="display:flex; align-items:center; gap:12px; min-height:50px; padding:0 16px"><div style="width:27px;height:27px;border-radius:999px;border:3px solid #2F6F4F"></div><span style="flex:1; font-size:16px; font-weight:800; color:#22301f">Baby spinach</span><span style="font-size:13px; font-weight:700; color:#7d9377">2 bags</span></div>
+              <div style="display:flex; align-items:center; gap:12px; min-height:50px; padding:0 16px"><div style="width:27px;height:27px;border-radius:999px;background:#2F6F4F;display:flex;align-items:center;justify-content:center"><svg width="13" height="11" viewBox="0 0 12 10"><path d="M1.5 5.2 4.4 8 10.5 1.8" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><span style="flex:1; font-size:16px; font-weight:800; color:#9fae9a; text-decoration:line-through">Avocados</span><span style="font-size:13px; font-weight:700; color:#9fae9a">4</span></div>
+            </div>
+            <div style="background:#FFF1DC; border-radius:24px; padding:6px 4px">
+              <div style="font-size:12px; font-weight:800; color:#A96A1D; padding:8px 16px 2px">Dairy &amp; eggs</div>
+              <div style="display:flex; align-items:center; gap:12px; min-height:50px; padding:0 16px"><div style="width:27px;height:27px;border-radius:999px;border:3px solid #A96A1D"></div><span style="flex:1; font-size:16px; font-weight:800; color:#33270f">Milk 2%</span><span style="font-size:13px; font-weight:700; color:#bd9463">2 L</span></div>
+              <div style="display:flex; align-items:center; gap:12px; min-height:50px; padding:0 16px"><div style="width:27px;height:27px;border-radius:999px;border:3px solid #A96A1D"></div><span style="flex:1; font-size:16px; font-weight:800; color:#33270f">Greek yogurt</span><span style="font-size:13px; font-weight:700; color:#bd9463">1 tub</span></div>
+            </div>
+          </div>
+          <div style="padding:10px 16px 44px">
+            <div style="height:52px; border-radius:999px; background:#2F6F4F; color:#fff; display:flex; align-items:center; justify-content:center; gap:8px; font-size:16px; font-weight:800; box-shadow:0 6px 20px rgba(47,111,79,0.35)">+ Add something</div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+  </div>
+
+  <div style="font:600 11px ui-monospace,Menlo,monospace; color:#8a8480; margin-bottom:16px">THE FLOW — DIRECTION <a href="#1a" style="color:#1f1b24; text-decoration:none; background:rgba(0,0,0,0.08); border-radius:5px; padding:2px 6px">1a</a>, LIVE + TWEAKABLE</div>
+  <div style="display:flex; flex-wrap:wrap; gap:44px; align-items:flex-start; margin-bottom:64px">
+
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <div style="font:600 11px ui-monospace,Menlo,monospace; color:#8a8480">01 · LISTS</div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+        <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; padding-top:70px; font-family:var(--font,'Nunito',sans-serif); background:color-mix(in oklab, var(--acc,#C4553B) 5%, #FBF8F3)">
+          <div style="padding:8px 22px 16px; display:flex; align-items:center; justify-content:space-between">
+            <span style="font-size:13px; font-weight:800; letter-spacing:0.1em; color:var(--acc,#C4553B)">TREBANAM</span>
+            <div style="display:flex">
+              <div style="width:28px;height:28px;border-radius:999px;background:#D08C2E;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff">A</div>
+              <div style="width:28px;height:28px;border-radius:999px;background:#4E7A9B;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-8px">L</div>
+            </div>
+          </div>
+          <div style="padding:0 22px 14px; font-size:30px; font-weight:800; letter-spacing:-0.01em; color:#2b2320">Our lists</div>
+          <div style="flex:1; overflow:auto; padding:0 16px; display:flex; flex-direction:column; gap:12px">
+            <div style="background:#fff; border-radius:var(--rad,18px); padding:16px 18px; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+              <div style="display:flex; justify-content:space-between; align-items:baseline"><span style="font-size:17px; font-weight:800; color:#2b2320">Weekly groceries</span><span style="font-size:13px; color:#9b9186">est {{ estTotalStr }}</span></div>
+              <div style="font-size:13px; color:#9b9186; margin-top:2px">{{ remainingCount }} to buy · {{ totalCount }} items</div>
+              <div style="height:6px; border-radius:999px; background:color-mix(in oklab, var(--acc,#C4553B) 14%, #fff); margin-top:12px; overflow:hidden"><div style="height:100%; background:var(--acc,#C4553B); width:{{ pct }}"></div></div>
+            </div>
+            <div style="background:#fff; border-radius:var(--rad,18px); padding:16px 18px; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+              <div style="display:flex; justify-content:space-between; align-items:baseline"><span style="font-size:17px; font-weight:800; color:#2b2320">Costco run</span><span style="font-size:13px; color:#9b9186">Saturday</span></div>
+              <div style="font-size:13px; color:#9b9186; margin-top:2px">5 items · est €89.00</div>
+            </div>
+            <div style="background:#fff; border-radius:var(--rad,18px); padding:16px 18px; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+              <div style="display:flex; justify-content:space-between; align-items:baseline"><span style="font-size:17px; font-weight:800; color:#2b2320">Pharmacy</span></div>
+              <div style="font-size:13px; color:#9b9186; margin-top:2px">2 items</div>
+            </div>
+            <div style="background:color-mix(in oklab, var(--acc,#C4553B) 10%, #fff); border-radius:var(--rad,18px); padding:16px 18px">
+              <div style="display:flex; justify-content:space-between; align-items:baseline"><span style="font-size:14px; font-weight:800; color:var(--acc,#C4553B)">September budget</span><span style="font-size:13px; font-weight:700; color:#2b2320">€218 of €400</span></div>
+              <div style="height:6px; border-radius:999px; background:rgba(255,255,255,0.7); margin-top:10px; overflow:hidden"><div style="height:100%; background:var(--acc,#C4553B); width:54%"></div></div>
+              <div style="font-size:12px; color:#9b9186; margin-top:8px">On track — €182 left, 24 days to go</div>
+            </div>
+          </div>
+          <div style="padding:10px 16px 44px">
+            <div style="height:50px; border-radius:calc(var(--radSm,11px) + 8px); background:var(--acc,#C4553B); color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:800">+ New list</div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <div style="font:600 11px ui-monospace,Menlo,monospace; color:#8a8480">02 · THE LIST</div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+        <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; padding-top:70px; font-family:var(--font,'Nunito',sans-serif); background:color-mix(in oklab, var(--acc,#C4553B) 5%, #FBF8F3)">
+          <div style="padding:8px 22px 12px; display:flex; flex-direction:column; gap:3px">
+            <div style="display:flex; align-items:center; justify-content:space-between">
+              <span style="font-size:11px; font-weight:800; letter-spacing:0.1em; color:var(--acc,#C4553B)">‹ OUR LISTS</span>
+              <span style="font-size:12.5px; font-weight:700; color:#9b9186; background:#fff; border-radius:999px; padding:4px 11px">est {{ estTotalStr }}</span>
+            </div>
+            <div style="font-size:30px; font-weight:800; letter-spacing:-0.01em; color:#2b2320">Weekly groceries</div>
+            <div style="font-size:14px; color:#9b9186">{{ remainingCount }} to buy · {{ totalCount }} items</div>
+          </div>
+          <div style="flex:1; overflow:auto; padding-bottom:16px">
+            <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="3">
+              <div style="margin-top:12px">
+                <div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#9b9186; padding:0 24px 7px">{{ sec.name }}</div>
+                <div style="background:#fff; border-radius:var(--rad,18px); margin:0 16px; overflow:hidden; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+                  <sc-for list="{{ sec.items }}" as="item" hint-placeholder-count="2">
+                    <div onClick="{{ item.onToggle }}" style="display:flex; align-items:center; gap:12px; min-height:52px; padding:0 16px; cursor:pointer; border-top:{{ item.sep }}">
+                      <div style="width:25px; height:25px; flex:none; border-radius:999px; border:2px solid var(--acc,#C4553B); background:{{ item.boxBg }}; display:flex; align-items:center; justify-content:center">
+                        <svg width="12" height="10" viewBox="0 0 12 10" style="opacity:{{ item.checkOp }}"><path d="M1.5 5.2 4.4 8 10.5 1.8" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                      </div>
+                      <span style="flex:1; font-size:16px; font-weight:700; color:{{ item.ink }}; text-decoration:{{ item.deco }}">{{ item.name }}</span>
+                      <span style="font-size:13px; color:#b3a99d">{{ item.sub }}</span>
+                      <div style="width:22px; height:22px; flex:none; border-radius:999px; background:{{ item.byColor }}; color:#fff; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center">{{ item.by }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding:10px 16px 44px">
+            <div style="display:flex; align-items:center; gap:10px; background:#fff; border-radius:calc(var(--radSm,11px) + 9px); padding:8px 8px 8px 18px; box-shadow:0 4px 18px rgba(80,50,30,0.14)">
+              <span style="flex:1; font-size:15px; color:#b3a99d">Add an item…</span>
+              <div style="width:38px; height:38px; border-radius:calc(var(--radSm,11px) + 4px); background:var(--acc,#C4553B); color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; line-height:1">+</div>
+            </div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <div style="font:600 11px ui-monospace,Menlo,monospace; color:#8a8480">03 · ADD ITEM</div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" keyboard="{{ true }}" hint-size="402px,874px">
+        <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; padding-top:70px; font-family:var(--font,'Nunito',sans-serif); background:color-mix(in oklab, var(--acc,#C4553B) 5%, #FBF8F3)">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 22px 12px">
+            <span style="font-size:22px; font-weight:800; color:#2b2320">Add item</span>
+            <span style="font-size:14px; font-weight:700; color:var(--acc,#C4553B)">Done</span>
+          </div>
+          <div style="margin:0 16px; background:#fff; border-radius:var(--radSm,11px); padding:14px 16px; display:flex; align-items:center; gap:2px; box-shadow:0 1px 2px rgba(80,50,30,0.07)">
+            <span style="font-size:17px; font-weight:700; color:#2b2320">Ba</span>
+            <div style="width:2px; height:20px; background:var(--acc,#C4553B)"></div>
+          </div>
+          <div style="margin:14px 16px 0; background:#fff; border-radius:var(--rad,18px); overflow:hidden; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+            <div style="display:flex; align-items:center; gap:12px; min-height:50px; padding:0 16px">
+              <span style="flex:1; font-size:16px; font-weight:700; color:#2b2320">Ba<span style="color:#b3a99d; font-weight:400">nanas</span></span>
+              <span style="font-size:12px; color:#b3a99d">Produce</span>
+              <span style="color:var(--acc,#C4553B); font-size:20px; line-height:1">+</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; min-height:50px; padding:0 16px; border-top:1px solid rgba(80,50,30,0.07)">
+              <span style="flex:1; font-size:16px; font-weight:700; color:#2b2320">Ba<span style="color:#b3a99d; font-weight:400">smati rice</span></span>
+              <span style="font-size:12px; color:#b3a99d">Pantry</span>
+              <span style="color:var(--acc,#C4553B); font-size:20px; line-height:1">+</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; min-height:50px; padding:0 16px; border-top:1px solid rgba(80,50,30,0.07)">
+              <span style="flex:1; font-size:16px; font-weight:700; color:#2b2320">Ba<span style="color:#b3a99d; font-weight:400">guette</span></span>
+              <span style="font-size:12px; color:#b3a99d">Bakery</span>
+              <span style="color:var(--acc,#C4553B); font-size:20px; line-height:1">+</span>
+            </div>
+          </div>
+          <div style="padding:16px 22px 6px; font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#9b9186">Weekly staples</div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; padding:0 16px">
+            <span style="font-size:13.5px; font-weight:700; color:var(--acc,#C4553B); background:color-mix(in oklab, var(--acc,#C4553B) 12%, #fff); border-radius:var(--radSm,11px); padding:8px 13px">+ Milk 2%</span>
+            <span style="font-size:13.5px; font-weight:700; color:var(--acc,#C4553B); background:color-mix(in oklab, var(--acc,#C4553B) 12%, #fff); border-radius:var(--radSm,11px); padding:8px 13px">+ Eggs</span>
+            <span style="font-size:13.5px; font-weight:700; color:var(--acc,#C4553B); background:color-mix(in oklab, var(--acc,#C4553B) 12%, #fff); border-radius:var(--radSm,11px); padding:8px 13px">+ Coffee beans</span>
+            <span style="font-size:13.5px; font-weight:700; color:var(--acc,#C4553B); background:color-mix(in oklab, var(--acc,#C4553B) 12%, #fff); border-radius:var(--radSm,11px); padding:8px 13px">+ Oat milk</span>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <div style="font:600 11px ui-monospace,Menlo,monospace; color:#8a8480">04 · ITEM DETAIL</div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+        <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; padding-top:70px; font-family:var(--font,'Nunito',sans-serif); background:color-mix(in oklab, var(--acc,#C4553B) 5%, #E9E2D8)">
+          <div style="padding:8px 22px; opacity:0.35">
+            <div style="font-size:30px; font-weight:800; color:#2b2320">Weekly groceries</div>
+            <div style="background:#fff; border-radius:var(--rad,18px); margin-top:14px; height:150px"></div>
+          </div>
+          <div style="flex:1"></div>
+          <div style="background:#fff; border-radius:var(--rad,18px) var(--rad,18px) 0 0; box-shadow:0 -8px 32px rgba(60,35,20,0.16); padding:10px 22px 48px">
+            <div style="width:40px; height:4px; border-radius:999px; background:#ddd3c6; margin:0 auto 16px"></div>
+            <div style="display:flex; align-items:center; justify-content:space-between">
+              <span style="font-size:24px; font-weight:800; color:#2b2320">Greek yogurt</span>
+              <span style="font-size:12px; font-weight:800; color:var(--acc,#C4553B); background:color-mix(in oklab, var(--acc,#C4553B) 12%, #fff); border-radius:999px; padding:5px 11px">Dairy &amp; Eggs</span>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:16px">
+              <div style="flex:1; background:#FBF6EE; border-radius:var(--radSm,11px); padding:10px 14px">
+                <div style="font-size:11px; font-weight:800; color:#9b9186; letter-spacing:0.06em">QUANTITY</div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:6px">
+                  <span style="width:28px; height:28px; border-radius:999px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:17px; color:var(--acc,#C4553B); font-weight:800; box-shadow:0 1px 2px rgba(80,50,30,0.12)">−</span>
+                  <span style="font-size:15px; font-weight:800; color:#2b2320">1 tub</span>
+                  <span style="width:28px; height:28px; border-radius:999px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:17px; color:var(--acc,#C4553B); font-weight:800; box-shadow:0 1px 2px rgba(80,50,30,0.12)">+</span>
+                </div>
+              </div>
+              <div style="flex:1; background:#FBF6EE; border-radius:var(--radSm,11px); padding:10px 14px">
+                <div style="font-size:11px; font-weight:800; color:#9b9186; letter-spacing:0.06em">EST. PRICE</div>
+                <div style="font-size:18px; font-weight:800; color:#2b2320; margin-top:8px">€2.40</div>
+              </div>
+            </div>
+            <div style="background:#FBF6EE; border-radius:var(--radSm,11px); padding:12px 14px; margin-top:10px">
+              <div style="font-size:11px; font-weight:800; color:#9b9186; letter-spacing:0.06em">NOTE</div>
+              <div style="font-size:14.5px; color:#2b2320; margin-top:5px">The one in the glass jar, plain not vanilla</div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 2px">
+              <div>
+                <div style="font-size:14.5px; font-weight:800; color:#2b2320">Weekly staple</div>
+                <div style="font-size:12.5px; color:#9b9186">Re-added every Monday</div>
+              </div>
+              <div style="width:46px; height:28px; border-radius:999px; background:var(--acc,#C4553B); position:relative"><div style="position:absolute; top:3px; right:3px; width:22px; height:22px; border-radius:999px; background:#fff"></div></div>
+            </div>
+            <div style="font-size:12.5px; color:#b3a99d; padding:0 2px">Added by Ana · Tuesday</div>
+            <div style="display:flex; gap:10px; margin-top:16px">
+              <div style="flex:1; height:48px; border-radius:calc(var(--radSm,11px) + 6px); border:1.5px solid #e5dccf; color:#9b9186; display:flex; align-items:center; justify-content:center; font-size:14.5px; font-weight:800">Remove</div>
+              <div style="flex:2; height:48px; border-radius:calc(var(--radSm,11px) + 6px); background:var(--acc,#C4553B); color:#fff; display:flex; align-items:center; justify-content:center; font-size:14.5px; font-weight:800">Save</div>
+            </div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <div style="font:600 11px ui-monospace,Menlo,monospace; color:#8a8480">05 · STORE MODE</div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+        <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; padding-top:70px; font-family:var(--font,'Nunito',sans-serif); background:color-mix(in oklab, var(--acc,#C4553B) 5%, #FBF8F3)">
+          <div style="margin:8px 16px 0; background:var(--acc,#C4553B); border-radius:var(--rad,18px); padding:18px 20px 20px; color:#fff">
+            <div style="display:flex; align-items:baseline; justify-content:space-between">
+              <span style="font-size:12px; font-weight:800; letter-spacing:0.1em; opacity:0.85">STORE MODE</span>
+              <span style="font-size:13px; font-weight:700; opacity:0.85">Exit</span>
+            </div>
+            <div style="font-size:24px; font-weight:800; margin-top:6px">{{ inCartCount }} of {{ totalCount }} in cart</div>
+            <div style="font-size:13.5px; font-weight:700; opacity:0.85; margin-top:2px">{{ cartTotalStr }} · est {{ estTotalStr }}</div>
+            <div style="height:8px; border-radius:999px; background:rgba(255,255,255,0.28); margin-top:12px; overflow:hidden">
+              <div style="height:100%; border-radius:999px; background:#fff; width:{{ pct }}"></div>
+            </div>
+          </div>
+          <div style="flex:1; overflow:auto; padding-bottom:44px">
+            <sc-for list="{{ shopSections }}" as="sec" hint-placeholder-count="3">
+              <div style="margin-top:12px">
+                <div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#9b9186; padding:0 24px 7px">{{ sec.name }}</div>
+                <div style="background:#fff; border-radius:var(--rad,18px); margin:0 16px; overflow:hidden; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+                  <sc-for list="{{ sec.items }}" as="item" hint-placeholder-count="2">
+                    <div onClick="{{ item.onToggle }}" style="display:flex; align-items:center; gap:14px; min-height:62px; padding:0 18px; cursor:pointer; border-top:{{ item.sep }}">
+                      <div style="width:30px; height:30px; flex:none; border-radius:999px; border:2.5px solid var(--acc,#C4553B); background:{{ item.boxBg }}"></div>
+                      <span style="flex:1; font-size:18px; font-weight:700; color:#2b2320">{{ item.name }}</span>
+                      <span style="font-size:14px; color:#b3a99d">{{ item.qty }}</span>
+                      <span style="font-size:14px; font-weight:700; color:#9b9186">{{ item.priceStr }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+            <div style="margin-top:16px">
+              <div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#9b9186; padding:0 24px 7px">In cart · {{ inCartCount }}</div>
+              <div style="margin:0 16px; border-radius:var(--rad,18px); background:color-mix(in oklab, var(--acc,#C4553B) 8%, #fff); overflow:hidden">
+                <sc-for list="{{ inCart }}" as="item" hint-placeholder-count="2">
+                  <div onClick="{{ item.onToggle }}" style="display:flex; align-items:center; gap:14px; min-height:48px; padding:0 18px; cursor:pointer; border-top:{{ item.sep }}">
+                    <div style="width:24px; height:24px; flex:none; border-radius:999px; background:var(--acc,#C4553B); display:flex; align-items:center; justify-content:center">
+                      <svg width="12" height="10" viewBox="0 0 12 10"><path d="M1.5 5.2 4.4 8 10.5 1.8" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    </div>
+                    <span style="flex:1; font-size:15px; font-weight:700; color:#a89c8d; text-decoration:line-through">{{ item.name }}</span>
+                    <span style="font-size:13px; font-weight:700; color:#a89c8d">{{ item.priceStr }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <div style="font:600 11px ui-monospace,Menlo,monospace; color:#8a8480">06 · HOUSEHOLD</div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+        <div style="height:100%; box-sizing:border-box; display:flex; flex-direction:column; padding-top:70px; font-family:var(--font,'Nunito',sans-serif); background:color-mix(in oklab, var(--acc,#C4553B) 5%, #FBF8F3)">
+          <div style="padding:8px 22px 16px">
+            <div style="font-size:30px; font-weight:800; letter-spacing:-0.01em; color:#2b2320">Our household</div>
+            <div style="font-size:14px; color:#9b9186">2 members · since March 2026</div>
+          </div>
+          <div style="flex:1; overflow:auto; padding:0 16px; display:flex; flex-direction:column; gap:12px">
+            <div style="background:#fff; border-radius:var(--rad,18px); padding:16px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+              <div style="width:44px; height:44px; border-radius:999px; background:#D08C2E; color:#fff; font-size:18px; font-weight:800; display:flex; align-items:center; justify-content:center">A</div>
+              <div style="flex:1">
+                <div style="font-size:16px; font-weight:800; color:#2b2320">Ana</div>
+                <div style="font-size:12.5px; color:#9b9186">34 items added · 3 shops this month</div>
+              </div>
+              <span style="font-size:11px; font-weight:800; color:var(--acc,#C4553B); background:color-mix(in oklab, var(--acc,#C4553B) 12%, #fff); border-radius:999px; padding:4px 10px">You</span>
+            </div>
+            <div style="background:#fff; border-radius:var(--rad,18px); padding:16px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+              <div style="width:44px; height:44px; border-radius:999px; background:#4E7A9B; color:#fff; font-size:18px; font-weight:800; display:flex; align-items:center; justify-content:center">L</div>
+              <div style="flex:1">
+                <div style="font-size:16px; font-weight:800; color:#2b2320">Luka</div>
+                <div style="font-size:12.5px; color:#9b9186">21 items added · 6 shops this month</div>
+              </div>
+            </div>
+            <div style="background:#fff; border-radius:var(--rad,18px); overflow:hidden; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+              <div style="display:flex; align-items:center; justify-content:space-between; min-height:52px; padding:0 18px">
+                <span style="font-size:15px; font-weight:700; color:#2b2320">Monthly budget</span>
+                <span style="font-size:14px; font-weight:700; color:#9b9186">€400 ›</span>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between; min-height:52px; padding:0 18px; border-top:1px solid rgba(80,50,30,0.07)">
+                <span style="font-size:15px; font-weight:700; color:#2b2320">Weekly staples</span>
+                <span style="font-size:14px; font-weight:700; color:#9b9186">12 items ›</span>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between; min-height:52px; padding:0 18px; border-top:1px solid rgba(80,50,30,0.07)">
+                <span style="font-size:15px; font-weight:700; color:#2b2320">Checked-off history</span>
+                <span style="font-size:14px; font-weight:700; color:#9b9186">›</span>
+              </div>
+            </div>
+            <div style="border:1.5px dashed color-mix(in oklab, var(--acc,#C4553B) 45%, #fff); border-radius:var(--rad,18px); padding:16px 18px; text-align:center">
+              <div style="font-size:14.5px; font-weight:800; color:#2b2320">Invite someone</div>
+              <div style="font-size:12.5px; color:#9b9186; margin-top:2px">Share code <span style="font-family:ui-monospace,Menlo,monospace; font-weight:700; color:var(--acc,#C4553B)">KUCA-42</span></div>
+            </div>
+          </div>
+          <div style="height:44px"></div>
+        </div>
+      </x-import>
+    </div>
+  </div>
+
+  <div style="font:600 11px ui-monospace,Menlo,monospace; color:#8a8480; margin-bottom:16px">DESKTOP — SAME LIST, LIVE</div>
+  <x-import component-from-global-scope="ChromeWindow" from="./browser-window.jsx" width="{{ deskW }}" height="{{ deskH }}" url="trebanam.app/lists/weekly" hint-size="1240px,780px">
+    <div style="display:flex; height:100%; font-family:var(--font,'Nunito',sans-serif); background:color-mix(in oklab, var(--acc,#C4553B) 5%, #FBF8F3)">
+      <div style="width:230px; flex:none; padding:20px 14px; box-sizing:border-box; display:flex; flex-direction:column; gap:2px; border-right:1px solid rgba(80,50,30,0.08)">
+        <div style="font-size:14px; font-weight:800; letter-spacing:0.08em; color:var(--acc,#C4553B); padding:0 10px 14px">TREBANAM</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 10px; border-radius:var(--radSm,11px); background:color-mix(in oklab, var(--acc,#C4553B) 12%, #fff); font-size:13.5px; font-weight:800; color:#2b2320"><span>Weekly groceries</span><span style="font-size:11px; color:var(--acc,#C4553B)">{{ remainingCount }}</span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 10px; border-radius:var(--radSm,11px); font-size:13.5px; font-weight:700; color:#6b655e"><span>Costco run</span><span style="font-size:11px; color:#9b9186">5</span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 10px; border-radius:var(--radSm,11px); font-size:13.5px; font-weight:700; color:#6b655e"><span>Pharmacy</span><span style="font-size:11px; color:#9b9186">2</span></div>
+        <div style="height:1px; background:rgba(80,50,30,0.08); margin:12px 6px"></div>
+        <div style="padding:9px 10px; font-size:13.5px; font-weight:700; color:#6b655e">Weekly staples</div>
+        <div style="padding:9px 10px; font-size:13.5px; font-weight:700; color:#6b655e">Budget</div>
+        <div style="padding:9px 10px; font-size:13.5px; font-weight:700; color:#6b655e">Household</div>
+        <div style="flex:1"></div>
+        <div style="display:flex; align-items:center; gap:8px; padding:6px 10px">
+          <div style="display:flex"><div style="width:24px;height:24px;border-radius:999px;background:#D08C2E;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff">A</div><div style="width:24px;height:24px;border-radius:999px;background:#4E7A9B;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-7px">L</div></div>
+          <span style="font-size:12px; color:#9b9186">Ana + Luka</span>
+        </div>
+      </div>
+      <div style="flex:1; min-width:0; padding:24px 28px; box-sizing:border-box; overflow:auto">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px">
+          <div>
+            <div style="font-size:24px; font-weight:800; color:#2b2320">Weekly groceries</div>
+            <div style="font-size:13px; color:#9b9186; margin-top:2px">{{ remainingCount }} to buy · est {{ estTotalStr }}</div>
+          </div>
+          <div style="height:38px; padding:0 16px; border-radius:calc(var(--radSm,11px) + 5px); background:var(--acc,#C4553B); color:#fff; display:flex; align-items:center; font-size:13.5px; font-weight:800">+ Add item</div>
+        </div>
+        <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="3">
+          <div style="margin-top:16px">
+            <div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:#9b9186; padding:0 4px 6px">{{ sec.name }}</div>
+            <div style="background:#fff; border-radius:var(--rad,18px); overflow:hidden; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+              <sc-for list="{{ sec.items }}" as="item" hint-placeholder-count="2">
+                <div onClick="{{ item.onToggle }}" style="display:flex; align-items:center; gap:14px; min-height:46px; padding:0 16px; cursor:pointer; border-top:{{ item.sep }}">
+                  <div style="width:22px; height:22px; flex:none; border-radius:999px; border:2px solid var(--acc,#C4553B); background:{{ item.boxBg }}; display:flex; align-items:center; justify-content:center">
+                    <svg width="11" height="9" viewBox="0 0 12 10" style="opacity:{{ item.checkOp }}"><path d="M1.5 5.2 4.4 8 10.5 1.8" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  </div>
+                  <span style="flex:1; font-size:14.5px; font-weight:700; color:{{ item.ink }}; text-decoration:{{ item.deco }}">{{ item.name }}</span>
+                  <span style="width:80px; text-align:right; font-size:12.5px; color:#b3a99d">{{ item.qty }}</span>
+                  <span style="width:60px; text-align:right; font-size:12.5px; font-weight:700; color:#9b9186">{{ item.priceStr }}</span>
+                  <div style="width:22px; height:22px; flex:none; border-radius:999px; background:{{ item.byColor }}; color:#fff; font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center">{{ item.by }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="width:280px; flex:none; padding:24px 20px; box-sizing:border-box; border-left:1px solid rgba(80,50,30,0.08); display:flex; flex-direction:column; gap:14px; overflow:auto">
+        <div style="background:color-mix(in oklab, var(--acc,#C4553B) 10%, #fff); border-radius:var(--rad,18px); padding:16px 18px">
+          <div style="font-size:12px; font-weight:800; color:var(--acc,#C4553B)">SEPTEMBER BUDGET</div>
+          <div style="font-size:20px; font-weight:800; color:#2b2320; margin-top:6px">€218 <span style="font-size:13px; color:#9b9186; font-weight:700">of €400</span></div>
+          <div style="height:6px; border-radius:999px; background:rgba(255,255,255,0.7); margin-top:10px; overflow:hidden"><div style="height:100%; background:var(--acc,#C4553B); width:54%"></div></div>
+          <div style="font-size:12px; color:#9b9186; margin-top:8px">This list adds ~{{ estTotalStr }}</div>
+        </div>
+        <div style="background:#fff; border-radius:var(--rad,18px); padding:14px 18px; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+          <div style="font-size:12px; font-weight:800; color:#9b9186; letter-spacing:0.06em; margin-bottom:10px">CHECKED OFF THIS WEEK</div>
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="display:flex; justify-content:space-between; font-size:13px"><span style="color:#6b655e; text-decoration:line-through">Eggs</span><span style="color:#b3a99d">Ana · Tue</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:13px"><span style="color:#6b655e; text-decoration:line-through">Coffee beans</span><span style="color:#b3a99d">Luka · Mon</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:13px"><span style="color:#6b655e; text-decoration:line-through">Sourdough</span><span style="color:#b3a99d">Ana · Sun</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:13px"><span style="color:#6b655e; text-decoration:line-through">Avocados</span><span style="color:#b3a99d">Ana · Sat</span></div>
+          </div>
+        </div>
+        <div style="background:#fff; border-radius:var(--rad,18px); padding:14px 18px; box-shadow:0 1px 2px rgba(80,50,30,0.06)">
+          <div style="font-size:12px; font-weight:800; color:#9b9186; letter-spacing:0.06em; margin-bottom:8px">RUNNING LOW?</div>
+          <div style="font-size:13px; color:#6b655e; line-height:1.5">Staples not bought in 10+ days: <strong>Oat milk</strong>, <strong>Butter</strong></div>
+        </div>
+      </div>
+    </div>
+  </x-import>
+
+  <p style="margin:40px 0 0; font-size:12.5px; color:#8a8480; max-width:680px">Try next: "make the flow follow <a href="#1b" style="font:600 10.5px ui-monospace,Menlo,monospace; padding:2px 6px; background:rgba(0,0,0,0.08); border-radius:5px; text-decoration:none; color:#1f1b24">1b</a>" · "add a checked-off history screen" · "budget planning view for later". If you re-attach the TrebaNam folder I can match your existing code.</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#C4553B&quot;,&quot;options&quot;:[&quot;#C4553B&quot;,&quot;#2F6F4F&quot;,&quot;#7A4E8C&quot;,&quot;#3B5BA5&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;font&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Geometric (Sora)&quot;,&quot;options&quot;:[&quot;Rounded (Nunito)&quot;,&quot;Geometric (Sora)&quot;,&quot;Classic (Georgia)&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;roundness&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:16,&quot;min&quot;:0,&quot;max&quot;:28,&quot;step&quot;:2,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+class Component extends DCLogic {
+  state = { items: [
+    {id:1,name:'Bananas',qty:'1 bunch',cat:'Produce',by:'A',price:1.20,checked:false},
+    {id:2,name:'Baby spinach',qty:'2 bags',cat:'Produce',by:'L',price:3.80,checked:false},
+    {id:3,name:'Avocados',qty:'4',cat:'Produce',by:'A',price:4.50,checked:true},
+    {id:12,name:'Sourdough',qty:'1 loaf',cat:'Bakery',by:'A',price:3.20,checked:true},
+    {id:4,name:'Milk 2%',qty:'2 L',cat:'Dairy & Eggs',by:'L',price:2.40,checked:false},
+    {id:5,name:'Eggs',qty:'12',cat:'Dairy & Eggs',by:'A',price:3.60,checked:true},
+    {id:6,name:'Greek yogurt',qty:'1 tub',cat:'Dairy & Eggs',by:'L',price:2.40,checked:false},
+    {id:7,name:'Basmati rice',qty:'1 kg',cat:'Pantry',by:'L',price:3.10,checked:false},
+    {id:8,name:'Olive oil',qty:'500 ml',cat:'Pantry',by:'A',price:6.80,checked:false},
+    {id:9,name:'Coffee beans',qty:'1 bag',cat:'Pantry',by:'L',price:8.90,checked:true},
+    {id:10,name:'Paper towels',qty:'6 rolls',cat:'Household',by:'L',price:4.20,checked:false},
+    {id:11,name:'Dish soap',qty:'1',cat:'Household',by:'A',price:1.90,checked:false},
+  ]};
+  toggle(id) {
+    this.setState(s => ({ items: s.items.map(i => i.id === id ? {...i, checked: !i.checked} : i) }));
+  }
+  enrich(list) {
+    const byColor = { A:'#D08C2E', L:'#4E7A9B' };
+    const fmt = n => '€' + n.toFixed(2);
+    return list.map((i, idx) => ({
+      ...i,
+      byColor: byColor[i.by],
+      onToggle: () => this.toggle(i.id),
+      sep: idx > 0 ? '1px solid rgba(80,50,30,0.07)' : 'none',
+      boxBg: i.checked ? 'var(--acc,#C4553B)' : 'transparent',
+      checkOp: i.checked ? 1 : 0,
+      ink: i.checked ? '#b3a99d' : '#2b2320',
+      deco: i.checked ? 'line-through' : 'none',
+      priceStr: fmt(i.price),
+      sub: i.qty + ' · ' + fmt(i.price),
+    }));
+  }
+  renderVals() {
+    const fonts = {
+      'Rounded (Nunito)': "'Nunito', system-ui, sans-serif",
+      'Geometric (Sora)': "'Sora', system-ui, sans-serif",
+      'Classic (Georgia)': "Georgia, 'Times New Roman', serif",
+    };
+    const r = this.props.roundness ?? 18;
+    const fmt = n => '€' + n.toFixed(2);
+    const items = this.state.items;
+    const cats = ['Produce','Bakery','Dairy & Eggs','Pantry','Household'];
+    const group = (list) => cats.map(c => ({ name: c, items: this.enrich(list.filter(i => i.cat === c)) })).filter(s => s.items.length);
+    const inCartRaw = items.filter(i => i.checked);
+    return {
+      acc: this.props.accent ?? '#C4553B',
+      fontStack: fonts[this.props.font ?? 'Rounded (Nunito)'] || fonts['Rounded (Nunito)'],
+      rad: r + 'px',
+      radSm: Math.max(4, Math.round(r * 0.6)) + 'px',
+      deskW: 1240, deskH: 780,
+      sections: group(items),
+      shopSections: group(items.filter(i => !i.checked)),
+      inCart: this.enrich(inCartRaw),
+      inCartCount: inCartRaw.length,
+      remainingCount: items.length - inCartRaw.length,
+      totalCount: items.length,
+      pct: Math.round(inCartRaw.length / items.length * 100) + '%',
+      estTotalStr: fmt(items.reduce((a, i) => a + i.price, 0)),
+      cartTotalStr: fmt(inCartRaw.reduce((a, i) => a + i.price, 0)),
+    };
+  }
+}
+</script>
+</body>
+</html>

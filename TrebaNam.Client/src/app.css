@@ -1,0 +1,191 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Sora je jeden variabilny subor na podmnozinu (100-800), lezi v static/fonts/,
+  takze ma stabilnu URL a da sa preloadnut uz z <head> v app.html - nie az potom,
+  ako CSS dobehne. K tomu font-display: optional: ak font nestihne prvy render,
+  prehliadac ho uz nevymeni a text nikdy nepreblikne. Prilozeny je aj original
+  SIL Open Font License (static/fonts/LICENSE.txt).
+
+  Preloadujeme len latin; latin-ext si prehliadac stiahne sam, ked na stranke
+  naozaj bude znak z jeho unicode-range (napr. meno s makcenom z Google uctu).
+  unicode-range hodnoty su prevzate z @fontsource-variable/sora.
+*/
+@font-face {
+	font-family: 'Sora';
+	font-style: normal;
+	font-weight: 100 800;
+	font-display: optional;
+	src: url('/fonts/sora-latin-wght-normal.woff2') format('woff2-variations');
+	unicode-range:
+		U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+		U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+	font-family: 'Sora';
+	font-style: normal;
+	font-weight: 100 800;
+	font-display: optional;
+	src: url('/fonts/sora-latin-ext-wght-normal.woff2') format('woff2-variations');
+	unicode-range:
+		U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+		U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+		U+A720-A7FF;
+}
+
+/*
+  Farby drzime ako "surove" premenne tu v :root, aby sa dali prepisat v .dark.
+  @theme inline nizsie na ne uz len odkazuje - keby boli hodnoty priamo v @theme inline,
+  Tailwind by ich zapiekol do utilit ako literaly a dark mode by ich neprepisal.
+
+  Paleta je "Cozy cream" z design handoffu, akcent ale nie terakotovy, lez zeleny
+  (#5EA758) - terakota sa bila s inym projektom. Vypln je svetla, takze text na nej je tmavy
+  (--primary-foreground) a akcentovy text na kreme berie tmavsi --tn-primary-strong.
+*/
+:root {
+	color-scheme: light;
+
+	/* 10px = inputy a chipy (rounded-lg), 16px = karty (rounded-2xl), 999px = pilulky. */
+	--radius: 0.625rem;
+
+	/* znackova paleta - prepis podla potreby, utility sa volaju bg-tn-primary a pod. */
+	--tn-primary: #5ea758;
+	--tn-primary-hover: #4c9446;
+	/* Akcent ako text na svetlom podklade - svetla vypln by na kreme nebola citatelna. */
+	--tn-primary-strong: #327b2e;
+	--tn-secondary: #4e7a9b;
+	--tn-accent: color-mix(in oklab, #5ea758 14%, #fff);
+	--tn-tint: color-mix(in oklab, #5ea758 10%, #fff);
+	/* Cisty teply krem z handoffu - bez primiesanej zelene, ta patri len akcentu. */
+	--tn-neutral-light: #fbf8f3;
+	--tn-neutral-dark: #26231e;
+	--tn-muted: #ddd6c9;
+
+	/* Dva stupne stlmeneho textu z handoffu: meta riadky a uz odskrtnute / neaktivne. */
+	--tn-meta: #757169;
+	--tn-faint: #aaa59a;
+
+	/* Farby clenov domacnosti - avatarove kruhy. */
+	--tn-member-a: #d08c2e;
+	--tn-member-b: #4e7a9b;
+
+	--tn-shadow-xs: 0 1px 2px rgba(80, 62, 30, 0.07);
+	--tn-shadow-float: 0 4px 18px rgba(80, 62, 30, 0.15);
+
+	--background: var(--tn-neutral-light);
+	--foreground: var(--tn-neutral-dark);
+	--card: #ffffff;
+	--card-foreground: var(--tn-neutral-dark);
+	/* Vypln akcentu je svetla, takze text na nej musi byt tmavy - biela by nebola citatelna. */
+	--primary-foreground: #16210f;
+	--muted: #f0ebe2;
+	--muted-foreground: #625d55;
+	--destructive: #c0392b;
+	--border: #e9e3d9;
+	--input: #e9e3d9;
+	--ring: var(--tn-primary-strong);
+}
+
+/*
+  Dark mode. Handoff je len svetly. Tmava verzia je zamerne neutralna - takmer cierne
+  a tmavosive podklady, zelena zostava len ako akcent. --tn-neutral-light / --tn-neutral-dark
+  su role (pozadie / text), nie doslovne odtiene - v dark mode sa preto prehodia.
+*/
+.dark {
+	color-scheme: dark;
+
+	--tn-primary: #5ea758;
+	--tn-primary-hover: #70ba6a;
+	--tn-primary-strong: #5ea758;
+	--tn-secondary: #7ba6c6;
+	--tn-accent: color-mix(in oklab, #5ea758 22%, #0f0f10);
+	--tn-tint: color-mix(in oklab, #5ea758 14%, #0f0f10);
+	--tn-neutral-light: #0f0f10;
+	--tn-neutral-dark: #ececed;
+	--tn-muted: #3a3a3d;
+
+	--tn-meta: #97979a;
+	--tn-faint: #7e7e82;
+
+	--tn-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+	--tn-shadow-float: 0 4px 18px rgba(0, 0, 0, 0.5);
+
+	--card: #1a1a1c;
+	--primary-foreground: #0f0f10;
+	--muted: #232326;
+	--muted-foreground: #aab0a3;
+	--destructive: #f87171;
+	--border: #2a2a2d;
+	--input: #333338;
+	--ring: var(--tn-primary-strong);
+}
+
+@theme inline {
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+
+	--font-sans: 'Sora', system-ui, sans-serif;
+
+	--shadow-xs: var(--tn-shadow-xs);
+	--shadow-float: var(--tn-shadow-float);
+
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-primary: var(--tn-primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+
+	--color-tn-primary: var(--tn-primary);
+	--color-tn-primary-hover: var(--tn-primary-hover);
+	--color-tn-primary-strong: var(--tn-primary-strong);
+	--color-tn-secondary: var(--tn-secondary);
+	--color-tn-accent: var(--tn-accent);
+	--color-tn-tint: var(--tn-tint);
+	--color-tn-neutral-light: var(--tn-neutral-light);
+	--color-tn-neutral-dark: var(--tn-neutral-dark);
+	--color-tn-muted: var(--tn-muted);
+	--color-tn-meta: var(--tn-meta);
+	--color-tn-faint: var(--tn-faint);
+	--color-tn-member-a: var(--tn-member-a);
+	--color-tn-member-b: var(--tn-member-b);
+}
+
+html,
+body {
+	height: 100%;
+	font-family: 'Sora', system-ui, sans-serif;
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+
+	html {
+		/* Otocenie telefonu na sirku inak zvacsi pismo, o ktore sme nikoho nepytali. */
+		-webkit-text-size-adjust: 100%;
+	}
+
+	body {
+		@apply bg-background text-foreground;
+		-webkit-tap-highlight-color: transparent;
+		overflow-wrap: break-word;
+	}
+}
+
+@utility wordmark {
+	/* "TREBANAM" v hlavicke - 11px caps s vyraznym prostrihom, vzdy v akcente. */
+	@apply text-[11px] font-bold tracking-[0.1em] text-tn-primary-strong uppercase;
+}

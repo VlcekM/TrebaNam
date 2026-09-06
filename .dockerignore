@@ -1,0 +1,32 @@
+# Build outputs
+**/bin/
+**/obj/
+**/node_modules/
+**/.svelte-kit/
+TrebaNam.Client/build/
+TrebaNam.Client/src/lib/paraglide/
+
+# Tooling / IDE
+.git/
+.gitignore
+.idea/
+.vs/
+.claude/
+**/*.user
+**/*.suo
+
+# Docs & docker
+CLAUDE.md
+README.md
+ARCHITECTURE.md
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# CI / secrets
+.github/
+.env
+db-data/
+
+# Design handoff (reference only, not shipped)
+design_handoff_trebanam/

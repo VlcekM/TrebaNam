@@ -1,0 +1,19 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+
+	"brand_name": "TrebaNam",
+
+	"theme_toggle": "Toggle dark mode",
+
+	"home_page_title": "TrebaNam - household shopping list",
+	"home_login_google": "Sign in with Google",
+
+	"app_page_title": "TrebaNam - App",
+	"app_header_title": "TrebaNam",
+	"app_logout": "Sign out",
+	"app_welcome": "Hi, {name}!",
+	"app_welcome_anonymous": "Hi!",
+	"app_signed_in_as": "Signed in as {email}",
+	"app_empty_state_title": "No lists yet",
+	"app_empty_state": "Your first shopping list is coming soon. Until then, you are signed in and everything works."
+}
