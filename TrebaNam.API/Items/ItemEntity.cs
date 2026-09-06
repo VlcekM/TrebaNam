@@ -12,6 +12,12 @@ public class ItemEntity
 
     public Guid HouseholdID { get; set; }
 
+    /// <summary>
+    /// Na ktorom zo zoznamov domacnosti stoji. Domacnost si ich vedie viac (tyzdenny nakup,
+    /// veci do zahrady) a polozka patri vzdy prave jednemu - so zmazanym zoznamom odchadza.
+    /// </summary>
+    public Guid ListID { get; set; }
+
     [MaxLength(NameMaxLength)]
     public required string Name { get; set; }
 

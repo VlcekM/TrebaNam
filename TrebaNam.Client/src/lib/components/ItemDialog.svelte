@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import StarIcon from '@lucide/svelte/icons/star';
 	import { ApiError } from '$lib/api';
-	import { CATEGORIES, categoryLabel } from '$lib/categories';
+	import { categoryName } from '$lib/categories';
 	import {
 		createItem,
 		deleteItem,
@@ -9,16 +10,31 @@
 		ItemNameMaxLength,
 		ItemNoteMaxLength,
 		ItemQuantityMaxLength,
+		setItemFavourite,
 		updateItem
 	} from '$lib/items';
 	import { m } from '$lib/paraglide/messages.js';
-	import type { Item, ItemSuggestion } from '$lib/types';
+	import type { Category, Item, ItemSuggestion, ShoppingList } from '$lib/types';
 
 	// Bez polozky sa zaklada nova, s polozkou sa upravuje - polia su v oboch pripadoch rovnake,
-	// takze to je jeden dialog a nie dva takmer identicke.
-	let { open = $bindable(false), item }: { open?: boolean; item?: Item } = $props();
+	// takze to je jeden dialog a nie dva takmer identicke. Zoznam je ten otvoreny; pri uprave
+	// rozhoduje ten, na ktorom polozka stoji.
+	let {
+		open = $bindable(false),
+		item,
+		list,
+		lists = [],
+		categories = []
+	}: {
+		open?: boolean;
+		item?: Item;
+		list?: ShoppingList;
+		lists?: ShoppingList[];
+		categories?: Category[];
+	} = $props();
 
 	let dialog = $state<HTMLDialogElement>();
+	let listID = $state('');
 	let name = $state('');
 	let quantity = $state('');
 	let category = $state<string>('other');
@@ -37,15 +53,19 @@
 	const query = $derived(name.trim().toLowerCase());
 
 	const matches = $derived(
-		suggestions
-			.filter((suggestion) => {
-				const candidate = suggestion.name.toLowerCase();
+		suggestions.filter((suggestion) => {
+			const candidate = suggestion.name.toLowerCase();
 
-				// Ked uz je napisane presne to, naseptavac nema co ponuknut.
-				return !query || (candidate.includes(query) && candidate !== query);
-			})
-			.slice(0, 6)
+			// Ked uz je napisane presne to, naseptavac nema co ponuknut.
+			return !query || (candidate.includes(query) && candidate !== query);
+		})
 	);
+
+	// Niektore veci sa kupuju kazdy tyzden a napriek tomu ich pocet nakupov nedostane hore -
+	// hviezdicka je rozhodnutie domacnosti a to je viac nez statistika, tak stoji nad nou.
+	const usuals = $derived(matches.filter((suggestion) => suggestion.isFavourite).slice(0, 4));
+
+	const bought = $derived(matches.filter((suggestion) => !suggestion.isFavourite).slice(0, 6));
 
 	// Nativny <dialog> uz vie modalitu, past na fokus aj zatvorenie Escapom, takze ho
 	// len drzime v sulade so stavom stranky namiesto vlastnej implementacie toho isteho.
@@ -53,6 +73,7 @@
 		if (!dialog) return;
 
 		if (open && !dialog.open) {
+			listID = item?.listID ?? list?.id ?? lists[0]?.id ?? '';
 			name = item?.name ?? '';
 			quantity = item?.quantity ?? '';
 			category = item?.category ?? 'other';
@@ -61,16 +82,18 @@
 			duplicate = undefined;
 			// Pri uprave sa meni konkretna polozka, tak tam navrhy nedavaju zmysel.
 			suggestions = [];
-			if (!item) loadSuggestions();
+			if (!item) loadSuggestions(listID);
 			dialog.showModal();
 		} else if (!open && dialog.open) {
 			dialog.close();
 		}
 	});
 
-	async function loadSuggestions() {
+	// Navrhy sa tahaju pre ten zoznam, na ktory sa prave pridava - vynechavaju to, co uz na nom
+	// stoji. Prehodenie zoznamu v poli nizsie ich uz neprenacita; duplicitu aj tak chyti API.
+	async function loadSuggestions(forList: string) {
 		try {
-			suggestions = await fetchItemSuggestions();
+			suggestions = await fetchItemSuggestions(forList);
 		} catch {
 			// Naseptavac je pomocka, nie podmienka - bez neho sa polozka prida rovnako.
 			suggestions = [];
@@ -81,6 +104,27 @@
 		name = suggestion.name;
 		quantity = suggestion.quantity ?? '';
 		category = suggestion.category;
+	}
+
+	/**
+	 * Hviezdicka je drobnost pri navrhu, nie ulozenie formulara - prekreslime ju hned a zapis
+	 * posleme popri tom. Ked neprejde, vrati sa tam, kde bola.
+	 */
+	async function star(suggestion: ItemSuggestion) {
+		const next = !suggestion.isFavourite;
+
+		suggestion.isFavourite = next;
+
+		try {
+			await setItemFavourite({
+				name: suggestion.name,
+				quantity: suggestion.quantity,
+				category: suggestion.category,
+				isFavourite: next
+			});
+		} catch {
+			suggestion.isFavourite = !next;
+		}
 	}
 
 	async function run(action: () => Promise<unknown>) {
@@ -128,6 +172,7 @@
 		if (!name.trim()) return;
 
 		const fields = {
+			listID,
 			name: name.trim(),
 			quantity: quantity.trim() || undefined,
 			category,
@@ -143,7 +188,7 @@
 	onclose={() => (open = false)}
 	onmousedown={backdropDown}
 	onclick={backdropClick}
-	class="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-2xl border border-tn-muted/40 bg-card p-0 text-foreground shadow-float"
+	class="m-auto max-h-[calc(100svh-2rem)] w-[min(26rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-tn-muted/40 bg-card p-0 text-foreground shadow-float"
 >
 	<form onsubmit={submit} class="flex flex-col gap-4 p-6">
 		<h2 class="text-[17px] font-bold">{item ? m.item_edit() : m.item_add()}</h2>
@@ -161,21 +206,20 @@
 			/>
 		</label>
 
-		{#if matches.length}
-			<div class="flex flex-col gap-2">
-				<span class="text-[11px] font-bold tracking-[0.08em] text-tn-meta uppercase">
-					{m.item_suggest_heading()}
-				</span>
-
-				<div class="flex flex-wrap gap-2">
-					{#each matches as suggestion (suggestion.name)}
+		{#snippet chips(list: ItemSuggestion[])}
+			<div class="flex flex-wrap gap-2">
+				{#each list as suggestion (suggestion.name)}
+					<!-- Navrh a hviezdicka su dve akcie, takze dve tlacidla vedla seba v jednom kruzku. -->
+					<div
+						class="inline-flex items-center rounded-lg bg-tn-tint text-[13px] font-bold text-tn-primary-strong"
+					>
 						<button
 							type="button"
 							onclick={() => pick(suggestion)}
 							title={suggestion.count === 1
 								? m.item_suggest_count_one()
 								: m.item_suggest_count({ count: suggestion.count })}
-							class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-tn-tint px-3 py-2 text-[13px] font-bold text-tn-primary-strong transition hover:brightness-95"
+							class="inline-flex cursor-pointer items-center gap-1.5 rounded-l-lg py-2 pr-1.5 pl-3 transition hover:brightness-95"
 						>
 							{suggestion.name}
 
@@ -183,9 +227,59 @@
 								<span class="font-semibold text-tn-meta">{suggestion.quantity}</span>
 							{/if}
 						</button>
-					{/each}
-				</div>
+
+						<button
+							type="button"
+							onclick={() => star(suggestion)}
+							aria-pressed={suggestion.isFavourite}
+							aria-label={suggestion.isFavourite ? m.item_usual_remove() : m.item_usual_add()}
+							class="inline-flex cursor-pointer items-center rounded-r-lg py-2 pr-2.5 pl-1 transition hover:brightness-95"
+						>
+							<StarIcon class="size-3.5 {suggestion.isFavourite ? 'fill-current' : 'opacity-40'}" />
+						</button>
+					</div>
+				{/each}
 			</div>
+		{/snippet}
+
+		{#if usuals.length}
+			<div class="flex flex-col gap-2">
+				<span class="text-[11px] font-bold tracking-[0.08em] text-tn-meta uppercase">
+					{m.item_usuals_heading()}
+				</span>
+
+				{@render chips(usuals)}
+			</div>
+		{/if}
+
+		{#if bought.length}
+			<div class="flex flex-col gap-2">
+				<span class="text-[11px] font-bold tracking-[0.08em] text-tn-meta uppercase">
+					{m.item_suggest_heading()}
+				</span>
+
+				{@render chips(bought)}
+			</div>
+		{/if}
+
+		<!--
+			Kym je zoznam jediny, nie je sa kam rozhodovat a pole by len zavadzalo. Pri uprave je
+			to zaroven presun: ze sa vec kupi az na chate, sa zisti az potom, co ju niekto napisal.
+		-->
+		{#if lists.length > 1}
+			<label class="flex flex-col gap-2">
+				<span class="text-[11px] font-bold tracking-[0.08em] text-tn-meta uppercase">
+					{m.item_list_label()}
+				</span>
+				<select
+					bind:value={listID}
+					class="h-12 w-full cursor-pointer rounded-lg border border-input bg-background px-3 font-semibold outline-none focus-visible:border-tn-primary"
+				>
+					{#each lists as one (one.id)}
+						<option value={one.id}>{one.name}</option>
+					{/each}
+				</select>
+			</label>
 		{/if}
 
 		<div class="flex gap-3">
@@ -209,8 +303,8 @@
 					bind:value={category}
 					class="h-12 w-full cursor-pointer rounded-lg border border-input bg-background px-3 font-semibold outline-none focus-visible:border-tn-primary"
 				>
-					{#each CATEGORIES as code (code)}
-						<option value={code}>{categoryLabel(code)}</option>
+					{#each categories as one (one.id)}
+						<option value={one.code}>{categoryName(one)}</option>
 					{/each}
 				</select>
 			</label>

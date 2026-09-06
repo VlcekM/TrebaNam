@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using TrebaNam.API.Auth;
+using TrebaNam.API.Realtime;
 
 namespace TrebaNam.API.ShoppingRecords.Endpoints;
 
@@ -16,7 +17,7 @@ public class SetTripTotalRequest
 /// Doplni alebo opravi sumu za uz ukonceny nakup. Jedina vec, ktora sa na zazname da menit -
 /// pri pokladni sa nie vzdy stiha zapisovat a uctenka sa najde neskor.
 /// </summary>
-public class SetTripTotalEndpoint(IDbContextFactory<DataContext> factory)
+public class SetTripTotalEndpoint(IDbContextFactory<DataContext> factory, HouseholdNotifier notifier)
     : Endpoint<SetTripTotalRequest, ShoppingRecordDTO>
 {
     public override void Configure()
@@ -54,6 +55,7 @@ public class SetTripTotalEndpoint(IDbContextFactory<DataContext> factory)
         record.TotalCost = TripCost.Round(req.TotalCost);
 
         await context.SaveChangesAsync(ct);
+        await notifier.ChangedAsync(record.HouseholdID, ChangeTopic.Trips, ct);
 
         await Send.OkAsync(record.ToDTO(), ct);
     }

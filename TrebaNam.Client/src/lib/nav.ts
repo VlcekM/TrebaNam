@@ -23,8 +23,14 @@ export function isActive(pathname: string, href: string) {
 	}
 
 	// Rezim nakupu je podobrazovka zoznamu, nie vlastna polozka - navigacia ostava na zozname.
+	// Kazdy zo zoznamov domacnosti ma vlastnu adresu, takze sa pozera aj na to, co je za nou.
 	if (href === '/app/list') {
-		return path === '/app/list' || path === '/app/shop';
+		return (
+			path === '/app/list' ||
+			path.startsWith('/app/list/') ||
+			path === '/app/shop' ||
+			path.startsWith('/app/shop/')
+		);
 	}
 
 	return path === href || path.startsWith(`${href}/`);

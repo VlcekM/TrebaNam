@@ -14,7 +14,20 @@ public class HouseholdDTO
 
     public DateTimeOffset CreatedAt { get; set; }
 
+    /// <summary>Skupiny zoznamu v poradi oddeleni v obchode. Vzdy vsetky, aj tie zakladne.</summary>
+    public List<HouseholdCategoryDTO> Categories { get; set; } = [];
+
     public List<HouseholdMemberDTO> Members { get; set; } = [];
+}
+
+/// <summary>Skupina zoznamu. Bez nazvu je zakladna a pomenuva ju preklad na klientovi.</summary>
+public class HouseholdCategoryDTO
+{
+    public Guid ID { get; set; }
+
+    public required string Code { get; set; }
+
+    public string? Name { get; set; }
 }
 
 /// <summary>Clen domacnosti. Zamerne uzsi nez UserDTO - suseda po appke neriesime.</summary>
@@ -56,12 +69,23 @@ public static class HouseholdMapping
         JoinedAt = user.CreatedAt
     };
 
-    public static HouseholdDTO ToDTO(this HouseholdEntity household, IEnumerable<UserEntity> members) => new()
+    public static HouseholdCategoryDTO ToDTO(this HouseholdCategoryEntity category) => new()
+    {
+        ID = category.ID,
+        Code = category.Code,
+        Name = category.Name
+    };
+
+    public static HouseholdDTO ToDTO(
+        this HouseholdEntity household,
+        IEnumerable<UserEntity> members,
+        IEnumerable<HouseholdCategoryEntity> categories) => new()
     {
         ID = household.ID,
         Name = household.Name,
         InviteCode = household.InviteCode,
         CreatedAt = household.CreatedAt,
+        Categories = categories.Select(c => c.ToDTO()).ToList(),
         Members = members.Select(m => m.ToMemberDTO()).ToList()
     };
 }

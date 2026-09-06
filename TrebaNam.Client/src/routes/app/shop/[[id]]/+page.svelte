@@ -4,8 +4,8 @@
 	import { invalidateAll } from '$app/navigation';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import PercentIcon from '@lucide/svelte/icons/percent';
-	import { byCategory, categoryLabel } from '$lib/categories';
-	import PartialAmountDialog from '$lib/components/PartialAmountDialog.svelte';
+	import { byCategory } from '$lib/categories';
+	import AmountsDialog from '$lib/components/AmountsDialog.svelte';
 	import TripTotalDialog from '$lib/components/TripTotalDialog.svelte';
 	import { setItemChecked } from '$lib/items';
 	import { ms } from '$lib/motion';
@@ -17,22 +17,25 @@
 
 	/**
 	 * V obchode sa odskrtava rychlo, takze riadok prepneme hned a poziadavku posleme popri tom;
-	 * ked neprejde, prepis zmizne a riadok sa vrati tam, kde ho vidi zvysok domacnosti.
+	 * ked neprejde, prepis zmizne a riadok sa vrati tam, kde ho vidi zvysok domacnosti. Prepis
+	 * plati len po dobu zapisu - potom uz je pravda zoznam zo servera, ktory sa meni aj pod
+	 * rukami toho druheho.
 	 */
 	let overrides = $state<Record<string, boolean>>({});
 	let failed = $state(false);
 	// Nakup sa ukoncuje v dialogu, lebo sa pri tom zapisuje aj to, kolko cely stal.
 	let finishOpen = $state(false);
 
-	// Ciastocne mnozstvo sa zadava v dialogu, nie klepnutim - je to text, nie prepinac.
+	// Mnozstva sa zadavaju v dialogu, nie klepnutim - su to texty, nie prepinace.
 	let partialOf = $state<Item | undefined>();
 	let partialOpen = $state(false);
 
+	const list = $derived(data.list);
 	const items = $derived(data.items);
 	const isChecked = $derived((item: Item) => overrides[item.id] ?? item.isChecked);
 	const inCart = $derived(items.filter(isChecked));
 	const left = $derived(items.filter((item) => !isChecked(item)));
-	const groups = $derived(byCategory(left));
+	const groups = $derived(byCategory(left, data.household?.categories));
 	// Ciastocne kupene tiez patria do nakupu, takze ho maju cim ukoncit.
 	const partial = $derived(left.filter((item) => item.boughtQuantity));
 
@@ -44,12 +47,12 @@
 
 		try {
 			await setItemChecked(item.id, next);
-
-			// Odskrtnutie ciastocny nakup na serveri zrusi - nech to sedi aj na obrazovke.
-			if (item.boughtQuantity) await invalidateAll();
+			// Odskrtnutie zrusi ciastocny nakup a druhy telefon prepise tiez - nacitame zoznam.
+			await invalidateAll();
 		} catch {
-			delete overrides[item.id];
 			failed = true;
+		} finally {
+			delete overrides[item.id];
 		}
 	}
 
@@ -76,11 +79,17 @@
 		<!-- Hlavicka rezimu je podla handoffu akcentna karta, nie obycajny nadpis. -->
 		<section class="flex flex-col gap-1 rounded-2xl bg-tn-tint p-5">
 			<div class="flex items-center justify-between gap-3">
-				<h1 class="text-[11px] font-bold tracking-[0.08em] text-tn-primary-strong uppercase">
-					{m.shop_title()}
+				<!-- Nakupuje sa z jedneho zoznamu, tak hlavicka rezimu povie aj z ktoreho. -->
+				<h1
+					class="min-w-0 truncate text-[11px] font-bold tracking-[0.08em] text-tn-primary-strong uppercase"
+				>
+					{m.shop_title()} · {list.name}
 				</h1>
 
-				<a href="/app/list" class="text-[13px] font-bold text-tn-primary-strong hover:underline">
+				<a
+					href="/app/list/{list.id}"
+					class="flex-none text-[13px] font-bold text-tn-primary-strong hover:underline"
+				>
 					{m.shop_exit()}
 				</a>
 			</div>
@@ -108,10 +117,10 @@
 			<p class="px-1.5 text-sm font-semibold text-destructive">{m.error_generic()}</p>
 		{/if}
 
-		{#each groups as group (group.category)}
+		{#each groups as group (group.code)}
 			<section class="flex flex-col gap-2" animate:flip={{ duration: ms(220) }}>
 				<h2 class="px-1.5 text-[11px] font-bold tracking-[0.08em] text-tn-meta uppercase">
-					{categoryLabel(group.category)}
+					{group.label}
 				</h2>
 
 				<ul class="flex flex-col rounded-2xl border border-tn-muted/40 bg-card px-4 shadow-xs">
@@ -151,7 +160,7 @@
 							<button
 								type="button"
 								onclick={() => askPartial(item)}
-								aria-label={m.shop_partial()}
+								aria-label={m.shop_amounts()}
 								class="inline-flex h-11 flex-none cursor-pointer items-center justify-center gap-1.5 rounded-lg px-3 font-bold transition {item.boughtQuantity
 									? 'bg-tn-tint text-[13px] text-tn-primary-strong'
 									: 'text-tn-meta hover:bg-muted'}"
@@ -225,5 +234,5 @@
 	</div>
 </main>
 
-<PartialAmountDialog bind:open={partialOpen} item={partialOf} />
-<TripTotalDialog bind:open={finishOpen} />
+<AmountsDialog bind:open={partialOpen} item={partialOf} />
+<TripTotalDialog bind:open={finishOpen} listID={list.id} />

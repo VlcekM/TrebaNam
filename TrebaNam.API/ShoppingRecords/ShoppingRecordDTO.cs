@@ -9,6 +9,11 @@ public class ShoppingRecordDTO
 
     public DateTimeOffset CompletedAt { get; set; }
 
+    /// <summary>Nazov zoznamu, z ktoreho sa nakupovalo, tak ako sa vtedy volal.</summary>
+    public string? ListName { get; set; }
+
+    public string? ListColor { get; set; }
+
     /// <summary>Cena celeho nakupu v eurach; null, ked ju nikto nezadal.</summary>
     public decimal? TotalCost { get; set; }
 
@@ -33,6 +38,8 @@ public static class ShoppingRecordMapping
         ID = record.ID,
         CompletedByUserID = record.CompletedByUserID,
         CompletedAt = record.CompletedAt,
+        ListName = record.ListName,
+        ListColor = record.ListColor,
         TotalCost = record.TotalCost,
         Items = record.Items
             .Select(i => new ShoppingRecordItemDTO

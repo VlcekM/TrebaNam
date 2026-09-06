@@ -1,11 +1,12 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using TrebaNam.API.Auth;
+using TrebaNam.API.Realtime;
 
 namespace TrebaNam.API.Households.Endpoints;
 
 /// <summary>Prijme pozvanku - prida prihlaseneho cloveka do domacnosti podla kodu.</summary>
-public class JoinHouseholdEndpoint(IDbContextFactory<DataContext> factory)
+public class JoinHouseholdEndpoint(IDbContextFactory<DataContext> factory, HouseholdNotifier notifier)
     : Endpoint<InviteRequest, HouseholdDTO>
 {
     public override void Configure()
@@ -47,12 +48,8 @@ public class JoinHouseholdEndpoint(IDbContextFactory<DataContext> factory)
         user.HouseholdID = household.ID;
 
         await context.SaveChangesAsync(ct);
+        await notifier.ChangedAsync(household.ID, ChangeTopic.Household, ct);
 
-        var members = await context.Users
-            .Where(u => u.HouseholdID == household.ID)
-            .OrderBy(u => u.CreatedAt)
-            .ToListAsync(ct);
-
-        await Send.OkAsync(household.ToDTO(members), ct);
+        await Send.OkAsync(await household.DetailAsync(context, ct), ct);
     }
 }

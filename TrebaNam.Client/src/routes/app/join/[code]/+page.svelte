@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { joinHousehold } from '$lib/households';
+	import { memberCount } from '$lib/counts';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 
@@ -53,9 +54,7 @@
 				</h1>
 
 				<p class="text-sm text-tn-meta">
-					{invite.memberCount === 1
-						? m.household_member_count_one()
-						: m.household_member_count_other({ count: invite.memberCount })}
+					{memberCount(invite.memberCount)}
 				</p>
 			</div>
 

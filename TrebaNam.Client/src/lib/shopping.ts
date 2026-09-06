@@ -1,11 +1,11 @@
 import { api } from '$lib/api';
 import type { ShoppingRecord } from '$lib/types';
 
-/** Ukonci nakup - z odskrtnutych poloziek spravi zaznam a zo zoznamu ich odoberie. */
-export function finishShopping(totalCost?: number) {
+/** Ukonci nakup jedneho zoznamu - odskrtnute polozky sa stanu zaznamom a zo zoznamu zmiznu. */
+export function finishShopping(listID: string, totalCost?: number) {
 	return api<ShoppingRecord>('/api/shopping-records', {
 		method: 'POST',
-		body: JSON.stringify({ totalCost: totalCost ?? null })
+		body: JSON.stringify({ listID, totalCost: totalCost ?? null })
 	});
 }
 

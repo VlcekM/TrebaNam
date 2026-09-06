@@ -1,13 +1,14 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using TrebaNam.API.Auth;
+using TrebaNam.API.Realtime;
+using TrebaNam.API.ShoppingLists;
 
 namespace TrebaNam.API.Items.Endpoints;
 
 public class CreateItemRequest : ItemFields;
 
-/// <summary>Prida polozku do zoznamu domacnosti.</summary>
-public class CreateItemEndpoint(IDbContextFactory<DataContext> factory)
+/// <summary>Prida polozku na jeden zo zoznamov domacnosti.</summary>
+public class CreateItemEndpoint(IDbContextFactory<DataContext> factory, HouseholdNotifier notifier)
     : Endpoint<CreateItemRequest, ItemDTO>
 {
     public override void Configure()
@@ -18,36 +19,26 @@ public class CreateItemEndpoint(IDbContextFactory<DataContext> factory)
 
     public override async Task HandleAsync(CreateItemRequest req, CancellationToken ct)
     {
-        if (!req.TryClean(out var values, out var error))
-            ThrowError(error!);
-
         await using var context = await factory.CreateDbContextAsync(ct);
 
-        var user = await CurrentUser.FindAsync(User, context, ct);
+        // Zoznam patri domacnosti, takze cudzi je pre nas to iste ako neexistujuci - a bez
+        // zoznamu nie je kam pridavat.
+        var found = await ShoppingListAccess.FindForCurrentUserAsync(User, req.ListID, context, ct);
 
-        if (user is null)
+        if (found is null)
         {
-            await Send.UnauthorizedAsync(ct);
+            await Send.NotFoundAsync(ct);
             return;
         }
 
-        // Zoznam patri domacnosti, takze bez nej nie je kam pridavat.
-        if (user.HouseholdID is null)
-        {
-            await Send.ResultAsync(TypedResults.Conflict("You are not in a household yet."));
-            return;
-        }
+        var (user, list) = found.Value;
 
-        // Ta ista vec dvakrat je len zmatok pri regali; diakritika ani velke pismena na tom
-        // nic nemenia, takze porovnavame cez ItemName.Key.
-        var key = ItemName.Key(values.Name);
+        var codes = await ItemAccess.CategoryCodesAsync(list.HouseholdID, context, ct);
 
-        var names = await context.Items
-            .Where(i => i.HouseholdID == user.HouseholdID)
-            .Select(i => i.Name)
-            .ToListAsync(ct);
+        if (!req.TryClean(codes, out var values, out var error))
+            ThrowError(error!);
 
-        var duplicate = names.FirstOrDefault(n => ItemName.Key(n) == key);
+        var duplicate = await ItemAccess.DuplicateOnListAsync(list.ID, values.Name, null, context, ct);
 
         if (duplicate is not null)
         {
@@ -57,7 +48,8 @@ public class CreateItemEndpoint(IDbContextFactory<DataContext> factory)
 
         var item = new ItemEntity
         {
-            HouseholdID = user.HouseholdID.Value,
+            HouseholdID = list.HouseholdID,
+            ListID = list.ID,
             Name = values.Name,
             Quantity = values.Quantity,
             Category = values.Category,
@@ -69,6 +61,7 @@ public class CreateItemEndpoint(IDbContextFactory<DataContext> factory)
         context.Items.Add(item);
 
         await context.SaveChangesAsync(ct);
+        await notifier.ChangedAsync(item.HouseholdID, ChangeTopic.Items, ct);
 
         await Send.OkAsync(item.ToDTO(), ct);
     }

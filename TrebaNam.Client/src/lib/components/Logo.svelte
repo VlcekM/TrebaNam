@@ -1,37 +1,23 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
 
-	// Rovnaka kresba ako favicon a PWA ikony - vozik s odskrtnutou polozkou.
-	// Zaoblenie dlazdice drzime na 12/48, teda rovnaky pomer ako 16/64 vo favicone.
-	// Tmavy atrament je tu literal, nie token: favicon.svg ziadne premenne necita a kresba
-	// sa s nim musi zhodovat.
+	// Rovnaka kresba ako favicon a PWA ikony - nakupny zoznam, dva riadky odskrtnute a tretia
+	// polozka este caka. Zaoblenie dlazdice drzime na 12/48, teda rovnaky pomer ako 16/64 vo
+	// favicone. Dlazdica, listok, fajky a ciary beru farby stranky, takze v tmavej teme logo
+	// stmavne rovnako, ako iOS stmavuje ikony; cervena a modra su literaly, lebo favicon.svg
+	// ziadne premenne necita a kresba sa s nim musi zhodovat.
 	let { class: className }: { class?: string } = $props();
 </script>
 
 <svg viewBox="0 0 64 64" aria-hidden="true" class={cn('size-9', className)}>
-	<rect width="64" height="64" rx="16" fill="var(--tn-primary)" />
-	<g transform="translate(8 8) scale(2)">
-		<path
-			d="M2.6 3.4h2.4l1.1 5"
-			fill="none"
-			stroke="#16210f"
-			stroke-width="2.4"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-		/>
-		<circle cx="10.9" cy="20.2" r="1.6" fill="#16210f" />
-		<circle cx="18.3" cy="20.2" r="1.6" fill="#16210f" />
-		<path
-			d="M7.2 8.4h14.2l-1.9 7.7a1.7 1.7 0 0 1-1.65 1.3h-7.1a1.7 1.7 0 0 1-1.65-1.3z"
-			fill="#16210f"
-		/>
-		<path
-			d="m10.9 12.5 1.9 1.9 4.1-4.4"
-			fill="none"
-			stroke="var(--tn-primary)"
-			stroke-width="2"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-		/>
-	</g>
+	<rect width="64" height="64" rx="16" fill="var(--background)" />
+	<rect x="11" y="7" width="42" height="50" rx="7" fill="var(--card)" stroke="var(--tn-muted)" stroke-opacity="0.4" stroke-width="1.5" />
+	<rect x="17" y="13.5" width="11" height="11" rx="3" fill="#e0483f" />
+	<path d="m19.6 19 2.1 2.1 4.4-4.6" fill="none" stroke="var(--primary-foreground)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+	<rect x="32" y="16.5" width="15" height="5" rx="2.5" fill="var(--foreground)" />
+	<rect x="17" y="26.5" width="11" height="11" rx="3" fill="#4f8fd6" />
+	<path d="m19.6 32 2.1 2.1 4.4-4.6" fill="none" stroke="var(--primary-foreground)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+	<rect x="32" y="29.5" width="11" height="5" rx="2.5" fill="var(--foreground)" />
+	<rect x="18" y="40.5" width="9" height="9" rx="2.2" fill="none" stroke="var(--tn-primary)" stroke-width="2" />
+	<rect x="32" y="42.5" width="13" height="5" rx="2.5" fill="var(--foreground)" />
 </svg>

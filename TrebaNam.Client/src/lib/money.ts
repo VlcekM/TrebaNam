@@ -1,11 +1,23 @@
+import { formatLocale } from '$lib/locale';
+
 /**
  * Sumy su v eurach - domacnost je jedna a plati jednou menou, takze si ju appka nikde nevybera.
- * Ked raz bude treba viac mien, patri to na domacnost, nie na jednotlivy nakup.
+ * Ked raz bude treba viac mien, patri to na domacnost, nie na jednotlivy nakup. Zapis sa riadi
+ * jazykom appky, takze po slovensky je to "24,90 €" a po anglicky "€24.90".
  */
-const format = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' });
+let cached: { locale: string; format: Intl.NumberFormat } | undefined;
 
 export function money(amount: number) {
-	return format.format(amount);
+	const locale = formatLocale();
+
+	if (cached?.locale !== locale) {
+		cached = {
+			locale,
+			format: new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' })
+		};
+	}
+
+	return cached.format.format(amount);
 }
 
 /**

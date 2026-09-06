@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using TrebaNam.API.Items;
+using TrebaNam.API.ShoppingLists;
 
 namespace TrebaNam.API.ShoppingRecords;
 
@@ -17,6 +18,16 @@ public class ShoppingRecordEntity
     public Guid CompletedByUserID { get; set; }
 
     public DateTimeOffset CompletedAt { get; set; }
+
+    /// <summary>
+    /// Z ktoreho zoznamu sa nakupovalo. Je to odpis nazvu a farby, nie odkaz nan - zoznam sa
+    /// da premenovat aj zmazat a nakup, ktory sa uz stal, sa tym menit nema.
+    /// </summary>
+    [MaxLength(ShoppingListEntity.NameMaxLength)]
+    public string? ListName { get; set; }
+
+    [MaxLength(ShoppingListEntity.ColorMaxLength)]
+    public string? ListColor { get; set; }
 
     /// <summary>
     /// Kolko cely nakup stal, v eurach. Jedna suma za nakup, nie cena za polozku - to je to,

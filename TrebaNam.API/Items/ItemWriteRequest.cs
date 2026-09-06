@@ -3,6 +3,9 @@ namespace TrebaNam.API.Items;
 /// <summary>Polia, ktore o polozke urcuje clovek. Rovnake pri zalozeni aj pri uprave.</summary>
 public class ItemFields
 {
+    /// <summary>Na ktory zo zoznamov domacnosti polozka patri.</summary>
+    public Guid ListID { get; set; }
+
     public string? Name { get; set; }
 
     public string? Quantity { get; set; }
@@ -20,8 +23,15 @@ public static class ItemFieldsExtensions
     /// <summary>
     /// Kontroly su spolocne pre zalozenie aj upravu, aby jedno neprepustilo to,
     /// co druhe odmieta. Chybu vracia ako text, samotnu odpoved uz riesi endpoint.
+    ///
+    /// Skupiny prichadzaju zvonka, lebo ich uz neurcuje appka ale domacnost; nezname sa
+    /// neodmietaju, padnu do "ostatne" rovnako ako predtym nezname kody.
     /// </summary>
-    public static bool TryClean(this ItemFields fields, out ItemValues values, out string? error)
+    public static bool TryClean(
+        this ItemFields fields,
+        IReadOnlyCollection<string> categories,
+        out ItemValues values,
+        out string? error)
     {
         values = new ItemValues(string.Empty, null, ItemCategory.Other, null);
 
@@ -58,7 +68,7 @@ public static class ItemFieldsExtensions
         values = new ItemValues(
             ItemName.Display(name),
             string.IsNullOrEmpty(quantity) ? null : quantity,
-            ItemCategory.Normalize(fields.Category),
+            ItemCategory.Normalize(fields.Category, categories),
             string.IsNullOrEmpty(note) ? null : note);
 
         error = null;

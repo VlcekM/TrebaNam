@@ -6,8 +6,13 @@
 	import type { ShoppingRecord } from '$lib/types';
 
 	// Bez zaznamu sa nakup prave ukoncuje, so zaznamom sa oprava suma uz ukonceneho. Pole je
-	// v oboch pripadoch to iste, takze je to jeden dialog a nie dva takmer rovnake.
-	let { open = $bindable(false), record }: { open?: boolean; record?: ShoppingRecord } = $props();
+	// v oboch pripadoch to iste, takze je to jeden dialog a nie dva takmer rovnake. Pri ukonceni
+	// treba vediet aj to, ktory zoznam sa donakupil - nakupuje sa po zoznamoch.
+	let {
+		open = $bindable(false),
+		record,
+		listID
+	}: { open?: boolean; record?: ShoppingRecord; listID?: string } = $props();
 
 	let dialog = $state<HTMLDialogElement>();
 	let amount = $state('');
@@ -39,8 +44,8 @@
 		try {
 			if (record) {
 				await setTripTotal(record.id, total);
-			} else {
-				await finishShopping(total);
+			} else if (listID) {
+				await finishShopping(listID, total);
 				// Nakup skoncil a jeho polozky su uz len v historii - tam sa clovek aj pozrie.
 				await goto('/app/history');
 			}

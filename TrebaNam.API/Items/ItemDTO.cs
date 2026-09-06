@@ -5,6 +5,9 @@ public class ItemDTO
 {
     public Guid ID { get; set; }
 
+    /// <summary>Na ktorom zozname domacnosti stoji.</summary>
+    public Guid ListID { get; set; }
+
     public required string Name { get; set; }
 
     public string? Quantity { get; set; }
@@ -30,6 +33,7 @@ public static class ItemMapping
     public static ItemDTO ToDTO(this ItemEntity item) => new()
     {
         ID = item.ID,
+        ListID = item.ListID,
         Name = item.Name,
         Quantity = item.Quantity,
         Category = item.Category,

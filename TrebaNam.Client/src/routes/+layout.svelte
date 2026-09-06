@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { page } from '$app/state';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import { getLocale } from '$lib/paraglide/runtime';
 
 	// Jedina domena, pod ktorou stranka bezi - staci na canonical.
 	const SITE_URL = 'https://trebanam.martinvlcek.sk';
@@ -10,6 +11,10 @@
 
 	// V /app je prepinac sucastou lepivej hlavicky, tu by sa s nou prekryval.
 	const inApp = $derived(page.url.pathname.startsWith('/app'));
+
+	$effect(() => {
+		document.documentElement.lang = getLocale();
+	});
 </script>
 
 <svelte:head>

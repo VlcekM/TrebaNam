@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using TrebaNam.API.Realtime;
 
 namespace TrebaNam.API.Items.Endpoints;
 
@@ -14,7 +15,7 @@ public class CheckItemRequest
 /// Odskrtnutie polozky v rezime nakupu. Samostatny endpoint, nie uprava - v obchode
 /// sa odskrtava rychlo a nema zmysel posielat pritom cely obsah polozky.
 /// </summary>
-public class CheckItemEndpoint(IDbContextFactory<DataContext> factory)
+public class CheckItemEndpoint(IDbContextFactory<DataContext> factory, HouseholdNotifier notifier)
     : Endpoint<CheckItemRequest, ItemDTO>
 {
     public override void Configure()
@@ -42,6 +43,9 @@ public class CheckItemEndpoint(IDbContextFactory<DataContext> factory)
         item.BoughtQuantity = null;
 
         await context.SaveChangesAsync(ct);
+
+        // Odskrtnutie vidi aj ten druhy - v obchode casto stoja pri inom regali.
+        await notifier.ChangedAsync(item.HouseholdID, ChangeTopic.Items, ct);
 
         await Send.OkAsync(item.ToDTO(), ct);
     }

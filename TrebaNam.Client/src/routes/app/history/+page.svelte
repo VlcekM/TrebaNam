@@ -4,7 +4,9 @@
 	import DeleteTripDialog from '$lib/components/DeleteTripDialog.svelte';
 	import MemberAvatar from '$lib/components/MemberAvatar.svelte';
 	import TripTotalDialog from '$lib/components/TripTotalDialog.svelte';
+	import { tripItemCount } from '$lib/counts';
 	import { tripDate } from '$lib/dates';
+	import { listDot } from '$lib/lists';
 	import { money } from '$lib/money';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { ShoppingRecord } from '$lib/types';
@@ -14,6 +16,7 @@
 
 	const records = $derived(data.records);
 	const members = $derived(data.household?.members ?? []);
+	const categories = $derived(data.household?.categories ?? []);
 
 	// Suma je jedina vec, ktora sa na ukoncenom nakupe meni - uctenka sa najde aj neskor.
 	let totalOf = $state<ShoppingRecord | undefined>();
@@ -71,13 +74,16 @@
 							<span class="sm:hidden">{date.short}</span>
 							<span class="hidden sm:inline">{date.long}</span>
 						</h2>
-						<p class="text-[13px] text-tn-meta">
+						<p class="flex items-center gap-1.5 text-[13px] text-tn-meta">
+							<!-- Z ktoreho zoznamu sa nakupovalo, tak ako sa vtedy volal - je to odpis. -->
+							{#if record.listName}
+								<span class="size-2 flex-none rounded-full {listDot(record.listColor)}"></span>
+								<span class="truncate">{record.listName}</span> ·
+							{/if}
 							{#if buyer}
 								{m.history_by({ name: buyer.member.givenName ?? buyer.member.name ?? '' })} ·
 							{/if}
-							{record.items.length === 1
-								? m.history_count_one()
-								: m.history_count_other({ count: record.items.length })}
+							{tripItemCount(record.items.length)}
 						</p>
 					</div>
 
@@ -113,7 +119,9 @@
 								<span class="text-[13px] text-tn-faint">{item.quantity}</span>
 							{/if}
 
-							<span class="text-[13px] text-tn-faint">{categoryLabel(item.category)}</span>
+							<span class="text-[13px] text-tn-faint">
+								{categoryLabel(item.category, categories)}
+							</span>
 						</li>
 					{/each}
 				</ul>

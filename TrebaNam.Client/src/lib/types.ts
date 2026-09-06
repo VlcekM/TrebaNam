@@ -20,13 +20,32 @@ export interface HouseholdMember {
 	joinedAt: string;
 }
 
+/** Skupina zoznamu z GET /api/households/me. Bez nazvu je zakladna a pomenuva ju preklad. */
+export interface Category {
+	id: string;
+	code: string;
+	name?: string;
+}
+
 /** Odpoved z GET /api/households/me. Bez domacnosti vracia API 204, teda undefined. */
 export interface Household {
 	id: string;
 	name: string;
 	inviteCode: string;
 	createdAt: string;
+	/** Skupiny v poradi oddeleni v obchode; vzdy vsetky, aj tie zakladne. */
+	categories: Category[];
 	members: HouseholdMember[];
+}
+
+/** Jeden zo zoznamov domacnosti z GET /api/lists. */
+export interface ShoppingList {
+	id: string;
+	name: string;
+	/** Kod farby, nie hex - odtien k nemu drzi klient, aby sedel aj v tmavom rezime. */
+	color: string;
+	note?: string;
+	createdAt: string;
 }
 
 /** Nahlad pozvanky z GET /api/households/invite/{code}. */
@@ -40,6 +59,8 @@ export interface HouseholdInvite {
 /** Polozka nakupneho zoznamu z GET /api/items. */
 export interface Item {
 	id: string;
+	/** Na ktorom zo zoznamov domacnosti stoji. */
+	listID: string;
 	name: string;
 	quantity?: string;
 	category: string;
@@ -65,6 +86,9 @@ export interface ShoppingRecord {
 	id: string;
 	completedByUserID: string;
 	completedAt: string;
+	/** Nazov zoznamu, z ktoreho sa nakupovalo, tak ako sa vtedy volal. */
+	listName?: string;
+	listColor?: string;
 	/** Cena celeho nakupu v eurach; chyba, kym ju nikto nezadal. */
 	totalCost?: number;
 	items: ShoppingRecordItem[];
@@ -76,4 +100,6 @@ export interface ItemSuggestion {
 	quantity?: string;
 	category: string;
 	count: number;
+	/** Oznacena hviezdickou - taka stoji pred vsetkym ostatnym. */
+	isFavourite: boolean;
 }

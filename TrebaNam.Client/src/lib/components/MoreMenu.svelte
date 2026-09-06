@@ -1,9 +1,11 @@
 <script lang="ts">
+	import GlobeIcon from '@lucide/svelte/icons/globe';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import MoreHorizontalIcon from '@lucide/svelte/icons/more-horizontal';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import { signOut } from '$lib/auth';
+	import { LOCALE_NAMES, nextLocale, switchLocale } from '$lib/locale';
 	import { m } from '$lib/paraglide/messages.js';
 	import { toggleTheme } from '$lib/theme';
 	import { cn } from '$lib/utils';
@@ -13,6 +15,9 @@
 
 	let open = $state(false);
 	let root = $state<HTMLDivElement>();
+
+	// Jazyky su dva, takze riadok ponuka rovno ten druhy a nie podponuku s vyberom.
+	const other = nextLocale();
 
 	function close() {
 		open = false;
@@ -62,6 +67,17 @@
 				<MoonIcon class="size-4 dark:hidden" />
 				<SunIcon class="hidden size-4 dark:block" />
 				{m.theme_toggle()}
+			</button>
+
+			<button
+				type="button"
+				onclick={() => switchLocale(other)}
+				aria-label={m.language_switch()}
+				class="inline-flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm font-bold transition hover:bg-muted"
+			>
+				<GlobeIcon class="size-4" />
+				<!-- Nazov jazyka sa neprekalada - kto ho hlada, hlada ho vo svojej reci. -->
+				{LOCALE_NAMES[other]}
 			</button>
 
 			<button

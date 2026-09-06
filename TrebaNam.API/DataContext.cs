@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TrebaNam.API.Auth;
 using TrebaNam.API.Households;
 using TrebaNam.API.Items;
+using TrebaNam.API.ShoppingLists;
 using TrebaNam.API.ShoppingRecords;
 
 namespace TrebaNam.API;
@@ -20,7 +21,13 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
 
     public DbSet<HouseholdEntity> Households { get; set; }
 
+    public DbSet<HouseholdCategoryEntity> HouseholdCategories { get; set; }
+
+    public DbSet<ShoppingListEntity> ShoppingLists { get; set; }
+
     public DbSet<ItemEntity> Items { get; set; }
+
+    public DbSet<ItemFavouriteEntity> ItemFavourites { get; set; }
 
     public DbSet<ShoppingRecordEntity> ShoppingRecords { get; set; }
 
@@ -38,15 +45,57 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
             .HasIndex(h => h.InviteCode)
             .IsUnique();
 
+        // Kod je identita skupiny v ramci domacnosti - podla neho na nu ukazuju polozky.
+        modelBuilder.Entity<HouseholdCategoryEntity>()
+            .HasIndex(c => new { c.HouseholdID, c.Code })
+            .IsUnique();
+
+        modelBuilder.Entity<HouseholdCategoryEntity>()
+            .HasOne<HouseholdEntity>()
+            .WithMany()
+            .HasForeignKey(c => c.HouseholdID)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Prepinac zoznamov sa cita cely pre jednu domacnost.
+        modelBuilder.Entity<ShoppingListEntity>()
+            .HasIndex(l => l.HouseholdID);
+
+        modelBuilder.Entity<ShoppingListEntity>()
+            .HasOne<HouseholdEntity>()
+            .WithMany()
+            .HasForeignKey(l => l.HouseholdID)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Zoznam sa vzdy cita cely pre jednu domacnost.
         modelBuilder.Entity<ItemEntity>()
             .HasIndex(i => i.HouseholdID);
+
+        modelBuilder.Entity<ItemEntity>()
+            .HasIndex(i => i.ListID);
+
+        // Polozka bez zoznamu nema kde stat, takze so zmazanym zoznamom odchadza aj ona.
+        modelBuilder.Entity<ItemEntity>()
+            .HasOne<ShoppingListEntity>()
+            .WithMany()
+            .HasForeignKey(i => i.ListID)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // So zrusenou domacnostou nema jej zoznam co robit.
         modelBuilder.Entity<ItemEntity>()
             .HasOne<HouseholdEntity>()
             .WithMany()
             .HasForeignKey(i => i.HouseholdID)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Hviezdicka plati pre domacnost a pre jednu vec v nej prave raz.
+        modelBuilder.Entity<ItemFavouriteEntity>()
+            .HasIndex(f => new { f.HouseholdID, f.NameKey })
+            .IsUnique();
+
+        modelBuilder.Entity<ItemFavouriteEntity>()
+            .HasOne<HouseholdEntity>()
+            .WithMany()
+            .HasForeignKey(f => f.HouseholdID)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<ShoppingRecordEntity>()

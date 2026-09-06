@@ -1,21 +1,25 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using TrebaNam.API.Auth;
+using TrebaNam.API.Realtime;
+using TrebaNam.API.ShoppingLists;
 
 namespace TrebaNam.API.ShoppingRecords.Endpoints;
 
 public class FinishShoppingRequest
 {
+    /// <summary>Ktory zoznam sa prave donakupil. Nakupuje sa po zoznamoch, nie cez vsetky naraz.</summary>
+    public Guid ListID { get; set; }
+
     /// <summary>Kolko cely nakup stal; nepovinne, sumu sa da doplnit aj neskor.</summary>
     public decimal? TotalCost { get; set; }
 }
 
 /// <summary>
-/// Ukonci nakup: z odskrtnutych poloziek spravi zaznam a zo zoznamu ich odoberie.
+/// Ukonci nakup jedneho zoznamu: z odskrtnutych poloziek spravi zaznam a zo zoznamu ich odoberie.
 /// Neodskrtnute ostavaju - to je to, co sa nekupilo a treba to nabuduce. Ciastocne kupene
 /// idu do zaznamu odnesenym mnozstvom, ale zo zoznamu neodchadzaju.
 /// </summary>
-public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory)
+public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory, HouseholdNotifier notifier)
     : Endpoint<FinishShoppingRequest, ShoppingRecordDTO>
 {
     public override void Configure()
@@ -31,23 +35,18 @@ public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory)
 
         await using var context = await factory.CreateDbContextAsync(ct);
 
-        var user = await CurrentUser.FindAsync(User, context, ct);
+        var found = await ShoppingListAccess.FindForCurrentUserAsync(User, req.ListID, context, ct);
 
-        if (user is null)
+        if (found is null)
         {
-            await Send.UnauthorizedAsync(ct);
+            await Send.NotFoundAsync(ct);
             return;
         }
 
-        if (user.HouseholdID is null)
-        {
-            await Send.ResultAsync(TypedResults.Conflict("You are not in a household yet."));
-            return;
-        }
+        var (user, list) = found.Value;
 
         var bought = await context.Items
-            .Where(i => i.HouseholdID == user.HouseholdID
-                && (i.IsChecked || i.BoughtQuantity != null))
+            .Where(i => i.ListID == list.ID && (i.IsChecked || i.BoughtQuantity != null))
             .OrderBy(i => i.CreatedAt)
             .ToListAsync(ct);
 
@@ -60,9 +59,12 @@ public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory)
 
         var record = new ShoppingRecordEntity
         {
-            HouseholdID = user.HouseholdID.Value,
+            HouseholdID = list.HouseholdID,
             CompletedByUserID = user.ID,
             CompletedAt = DateTimeOffset.UtcNow,
+            // Odpis, nie odkaz: zoznam sa da premenovat aj zrusit a nakup ostava tym, comu bol.
+            ListName = list.Name,
+            ListColor = list.Color,
             TotalCost = TripCost.Round(req.TotalCost),
             Items = bought
                 .Select(i => new ShoppingRecordItemEntity
@@ -85,6 +87,9 @@ public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory)
             partial.BoughtQuantity = null;
 
         await context.SaveChangesAsync(ct);
+
+        // Zoznam sa tym vyprazdnil a v historii pribudol nakup - druha strana ma co menit na oboch.
+        await notifier.ChangedAsync(record.HouseholdID, ChangeTopic.Trips, ct);
 
         await Send.OkAsync(record.ToDTO(), ct);
     }

@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using TrebaNam.API.Realtime;
 
 namespace TrebaNam.API.Items.Endpoints;
 
@@ -15,7 +16,7 @@ public class SetBoughtQuantityRequest
 /// Zapise, ze sa z polozky kupila len cast. Polozka ostava neodskrtnuta, lebo zvysok stale
 /// treba; do historie sa pri ukonceni nakupu dostane prave toto mnozstvo.
 /// </summary>
-public class SetBoughtQuantityEndpoint(IDbContextFactory<DataContext> factory)
+public class SetBoughtQuantityEndpoint(IDbContextFactory<DataContext> factory, HouseholdNotifier notifier)
     : Endpoint<SetBoughtQuantityRequest, ItemDTO>
 {
     public override void Configure()
@@ -48,6 +49,7 @@ public class SetBoughtQuantityEndpoint(IDbContextFactory<DataContext> factory)
             item.IsChecked = false;
 
         await context.SaveChangesAsync(ct);
+        await notifier.ChangedAsync(item.HouseholdID, ChangeTopic.Items, ct);
 
         await Send.OkAsync(item.ToDTO(), ct);
     }

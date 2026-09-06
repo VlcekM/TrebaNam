@@ -35,11 +35,6 @@ public class GetMyHouseholdEndpoint(IDbContextFactory<DataContext> factory)
             return;
         }
 
-        var members = await context.Users
-            .Where(u => u.HouseholdID == household.ID)
-            .OrderBy(u => u.CreatedAt)
-            .ToListAsync(ct);
-
-        await Send.OkAsync(household.ToDTO(members), ct);
+        await Send.OkAsync(await household.DetailAsync(context, ct), ct);
     }
 }

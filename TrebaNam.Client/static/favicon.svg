@@ -1,29 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-	<rect width="64" height="64" rx="16" fill="#5ea758" />
-	<g transform="translate(8 8) scale(2)">
-		<!-- Rucka vozika a kolieska - tenke prvky, drzime ich hrube kvoli 16px faviconu. -->
-		<path
-			d="M2.6 3.4h2.4l1.1 5"
-			fill="none"
-			stroke="#16210f"
-			stroke-width="2.4"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-		/>
-		<circle cx="10.9" cy="20.2" r="1.6" fill="#16210f" />
-		<circle cx="18.3" cy="20.2" r="1.6" fill="#16210f" />
-		<!-- Kos je plna plocha, fajka je z nej vyrezana farbou dlazdice - citatelnejsie ako obrys. -->
-		<path
-			d="M7.2 8.4h14.2l-1.9 7.7a1.7 1.7 0 0 1-1.65 1.3h-7.1a1.7 1.7 0 0 1-1.65-1.3z"
-			fill="#16210f"
-		/>
-		<path
-			d="m10.9 12.5 1.9 1.9 4.1-4.4"
-			fill="none"
-			stroke="#5ea758"
-			stroke-width="2"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-		/>
-	</g>
+	<rect width="64" height="64" rx="16" fill="#fbf8f3" />
+	<!-- Nakupny zoznam: biely listok s tromi riadkami, dva odskrtnute, tretia polozka este caka. -->
+	<rect x="11" y="7" width="42" height="50" rx="7" fill="#ffffff" stroke="#e2dcd2" stroke-width="1.5" />
+	<!-- Riadok 1 - odskrtnuty, cerveny -->
+	<rect x="17" y="13.5" width="11" height="11" rx="3" fill="#e0483f" />
+	<path d="m19.6 19 2.1 2.1 4.4-4.6" fill="none" stroke="#fbf8f3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+	<rect x="32" y="16.5" width="15" height="5" rx="2.5" fill="#2b2622" />
+	<!-- Riadok 2 - odskrtnuty, modry -->
+	<rect x="17" y="26.5" width="11" height="11" rx="3" fill="#4f8fd6" />
+	<path d="m19.6 32 2.1 2.1 4.4-4.6" fill="none" stroke="#fbf8f3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+	<rect x="32" y="29.5" width="11" height="5" rx="2.5" fill="#2b2622" />
+	<!-- Riadok 3 - este nekupeny, zeleny prazdny ramcek -->
+	<rect x="18" y="40.5" width="9" height="9" rx="2.2" fill="none" stroke="#5ea758" stroke-width="2" />
+	<rect x="32" y="42.5" width="13" height="5" rx="2.5" fill="#2b2622" />
 </svg>

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using TrebaNam.API;
 using TrebaNam.API.Auth;
+using TrebaNam.API.Realtime;
 using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -114,6 +115,10 @@ builder.Services
 builder.Services.AddAuthorization();
 builder.Services.AddFastEndpoints();
 
+// 5b. Realny cas: hub len oznamuje zmeny, data si klient aj tak tiahne cez /api.
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<HouseholdNotifier>();
+
 builder.Services.AddSingleton<AdminEmails>();
 
 var app = builder.Build();
@@ -136,6 +141,9 @@ if (!app.Environment.IsDevelopment())
     app.UseStaticFiles();
 }
 
+// SignalR pouziva websocket, ked ho spojenie zvladne; inak si sam siahne po dlhom dopyte.
+app.UseWebSockets();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -143,6 +151,8 @@ app.MapFastEndpoints(x =>
 {
     x.Endpoints.RoutePrefix = "api";
 });
+
+app.MapHub<HouseholdHub>(HouseholdChannel.Path);
 
 if (app.Environment.IsDevelopment())
 {

@@ -10,9 +10,10 @@ export default defineConfig({
 		paraglideVitePlugin({
 			project: './project.inlang',
 			outdir: './src/lib/paraglide',
-			// Appka je zatial len anglicka, takze ziadny jazyk v URL - paraglide drzime
-			// kvoli katalogu retazcov, aby sa dal dalsi jazyk pridat bez prepisovania markupu.
-			strategy: ['baseLocale']
+			// Jazyk drzi cookie, nie URL: appka bezi na jednej adrese, ktoru si ludia ulozia
+			// na plochu, a preklapat ju na /sk by rozbilo aj ulozene odkazy, aj navrat z Googlu.
+			// Bez cookie rozhoduje jazyk prehliadaca a az potom anglictina.
+			strategy: ['cookie', 'preferredLanguage', 'baseLocale']
 		})
 	],
 	server: {

@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using TrebaNam.API.Realtime;
 
 namespace TrebaNam.API.Items.Endpoints;
 
@@ -9,7 +10,7 @@ public class ItemByIDRequest
 }
 
 /// <summary>Zmaze polozku zo zoznamu.</summary>
-public class DeleteItemEndpoint(IDbContextFactory<DataContext> factory)
+public class DeleteItemEndpoint(IDbContextFactory<DataContext> factory, HouseholdNotifier notifier)
     : Endpoint<ItemByIDRequest>
 {
     public override void Configure()
@@ -30,9 +31,12 @@ public class DeleteItemEndpoint(IDbContextFactory<DataContext> factory)
             return;
         }
 
+        var householdID = item.HouseholdID;
+
         context.Items.Remove(item);
 
         await context.SaveChangesAsync(ct);
+        await notifier.ChangedAsync(householdID, ChangeTopic.Items, ct);
 
         await Send.NoContentAsync(ct);
     }

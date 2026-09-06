@@ -14,4 +14,7 @@ public class ItemSuggestionDTO
 
     /// <summary>Kolkokrat sa uz kupila; podla toho su navrhy zoradene.</summary>
     public int Count { get; set; }
+
+    /// <summary>Oznacena hviezdickou - taka ide pred vsetky ostatne bez ohladu na Count.</summary>
+    public bool IsFavourite { get; set; }
 }

@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using TrebaNam.API.Auth;
+using TrebaNam.API.Realtime;
 
 namespace TrebaNam.API.ShoppingRecords.Endpoints;
 
@@ -13,7 +14,7 @@ public class DeleteTripRequest
 /// Zmaze ukonceny nakup aj s jeho riadkami. Polozky sa uz do zoznamu nevracaju - zaznam je
 /// odpis toho, co bolo, takze zmazat ho znamena povedat, ze taky nakup nebol.
 /// </summary>
-public class DeleteTripEndpoint(IDbContextFactory<DataContext> factory)
+public class DeleteTripEndpoint(IDbContextFactory<DataContext> factory, HouseholdNotifier notifier)
     : Endpoint<DeleteTripRequest>
 {
     public override void Configure()
@@ -45,9 +46,12 @@ public class DeleteTripEndpoint(IDbContextFactory<DataContext> factory)
         }
 
         // Riadky visia na zazname kaskadou, takze staci zmazat jeho.
+        var householdID = record.HouseholdID;
+
         context.ShoppingRecords.Remove(record);
 
         await context.SaveChangesAsync(ct);
+        await notifier.ChangedAsync(householdID, ChangeTopic.Trips, ct);
 
         await Send.NoContentAsync(ct);
     }
