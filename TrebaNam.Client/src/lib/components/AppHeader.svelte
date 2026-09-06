@@ -1,56 +1,64 @@
 <script lang="ts">
-	import LogOutIcon from '@lucide/svelte/icons/log-out';
-	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { userStore } from '$lib/stores/user';
-	import { m } from '$lib/paraglide/messages.js';
+	import { page } from '$app/state';
+	import Logo from '$lib/components/Logo.svelte';
+	import MemberAvatar from '$lib/components/MemberAvatar.svelte';
+	import MoreMenu from '$lib/components/MoreMenu.svelte';
+	import Wordmark from '$lib/components/Wordmark.svelte';
+	import { isActive, navItems } from '$lib/nav';
+	import type { Household } from '$lib/types';
 
-	// Iniciala do avatara, ked Google nevrati obrazok.
-	const initial = $derived(($userStore?.givenName ?? $userStore?.name ?? '?').slice(0, 1));
+	let { household }: { household?: Household } = $props();
 
-	async function logout() {
-		await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-		// Plny reload - stav SPA po odhlaseni nema co prezit.
-		window.location.href = '/';
-	}
+	const items = $derived(navItems());
 </script>
 
+<!--
+	Hlavicka je mobilny protipol bocneho panela, preto od lg mizne. Podla handoffu nesie
+	znacku vlavo a stacknutych clenov vpravo; ostatne volby su schovane v menu.
+-->
 <header
-	class="sticky top-0 z-40 border-b border-tn-muted/40 bg-background/85 backdrop-blur"
+	class="sticky top-0 z-40 border-b border-tn-muted/40 bg-background/85 backdrop-blur lg:hidden"
 	style="padding-top: env(safe-area-inset-top)"
 >
-	<div class="mx-auto flex max-w-2xl items-center gap-3 px-4 py-2.5">
-		<a href="/app" class="wordmark">
-			{m.app_header_title()}
-		</a>
+	<div class="mx-auto flex max-w-2xl flex-col gap-2 px-4 pt-2.5">
+		<div class="flex items-center gap-3">
+			<a href="/app" class="flex items-center gap-2">
+				<Logo class="size-8" />
+				<Wordmark class="text-[11px] tracking-[0.1em] uppercase" />
+			</a>
 
-		<div class="ml-auto flex items-center gap-2">
-			<ThemeToggle />
+			<div class="ml-auto flex items-center gap-2">
+				{#if household}
+					<div class="flex">
+						{#each household.members as member, index (member.id)}
+							<MemberAvatar {member} {index} class="size-8 text-xs {index > 0 ? '-ml-2.5' : ''}" />
+						{/each}
+					</div>
+				{/if}
 
-			<!-- Avatar je kruh s bielym prstencom, presne ako stacknuti clenovia v handoffe. -->
-			{#if $userStore?.pictureUrl}
-				<img
-					src={$userStore.pictureUrl}
-					alt=""
-					referrerpolicy="no-referrer"
-					class="size-10 rounded-full object-cover ring-2 ring-background"
-				/>
-			{:else if $userStore}
-				<span
-					class="inline-flex size-10 items-center justify-center rounded-full bg-tn-member-a text-sm font-bold text-white ring-2 ring-background"
-				>
-					{initial}
-				</span>
-			{/if}
-
-			<button
-				type="button"
-				onclick={logout}
-				title={m.app_logout()}
-				aria-label={m.app_logout()}
-				class="inline-flex size-10 cursor-pointer items-center justify-center rounded-lg border border-tn-muted/40 bg-card/80 shadow-xs transition hover:bg-muted"
-			>
-				<LogOutIcon class="size-5" />
-			</button>
+				<MoreMenu panelClass="top-full right-0 mt-2" />
+			</div>
 		</div>
+
+		<!-- Bez domacnosti sa este nie je kam prepinat, tak sa navigacia neukazuje vobec. -->
+		{#if household}
+			<nav class="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-2">
+				{#each items as item (item.href)}
+					{@const active = isActive(page.url.pathname, item.href)}
+
+					<a
+						href={item.href}
+						aria-current={active ? 'page' : undefined}
+						class="rounded-lg px-3 py-1.5 text-[13.5px] font-bold whitespace-nowrap transition {active
+							? 'bg-tn-accent'
+							: 'text-tn-meta'}"
+					>
+						{item.label}
+					</a>
+				{/each}
+			</nav>
+		{:else}
+			<div class="pb-2.5"></div>
+		{/if}
 	</div>
 </header>

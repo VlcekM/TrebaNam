@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TrebaNam.API.Auth;
+using TrebaNam.API.Households;
 
 namespace TrebaNam.API;
 
@@ -15,6 +16,8 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
 
     public DbSet<UserEntity> Users { get; set; }
 
+    public DbSet<HouseholdEntity> Households { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -23,5 +26,18 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
         modelBuilder.Entity<UserEntity>()
             .HasIndex(u => u.GoogleSub)
             .IsUnique();
+
+        // Pozvankovy kod je zaroven vyhladavaci kluc, unikat drzi aj kolizie generatora.
+        modelBuilder.Entity<HouseholdEntity>()
+            .HasIndex(h => h.InviteCode)
+            .IsUnique();
+
+        // Bez navigacnej vlastnosti - clenov citame dotazom, nie cez graf objektov.
+        // Zmazanie domacnosti necha ludi bez nej, nie zmazanych.
+        modelBuilder.Entity<UserEntity>()
+            .HasOne<HouseholdEntity>()
+            .WithMany()
+            .HasForeignKey(u => u.HouseholdID)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

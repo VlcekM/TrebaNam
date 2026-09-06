@@ -5,19 +5,18 @@
 /*
   Sora je jeden variabilny subor na podmnozinu (100-800), lezi v static/fonts/,
   takze ma stabilnu URL a da sa preloadnut uz z <head> v app.html - nie az potom,
-  ako CSS dobehne. K tomu font-display: optional: ak font nestihne prvy render,
-  prehliadac ho uz nevymeni a text nikdy nepreblikne. Prilozeny je aj original
-  SIL Open Font License (static/fonts/LICENSE.txt).
+  ako CSS dobehne. K tomu font-display: block: kym font nie je nacitany, text sa
+  nevykresli vobec, takze sa nikdy nezobrazi nahradny font a nic neprepne.
+  Preloadujeme obe podmnoziny, aby to cakanie trvalo jeden sietovy request.
+  Prilozeny je aj original SIL Open Font License (static/fonts/LICENSE.txt).
 
-  Preloadujeme len latin; latin-ext si prehliadac stiahne sam, ked na stranke
-  naozaj bude znak z jeho unicode-range (napr. meno s makcenom z Google uctu).
   unicode-range hodnoty su prevzate z @fontsource-variable/sora.
 */
 @font-face {
 	font-family: 'Sora';
 	font-style: normal;
 	font-weight: 100 800;
-	font-display: optional;
+	font-display: block;
 	src: url('/fonts/sora-latin-wght-normal.woff2') format('woff2-variations');
 	unicode-range:
 		U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
@@ -28,7 +27,7 @@
 	font-family: 'Sora';
 	font-style: normal;
 	font-weight: 100 800;
-	font-display: optional;
+	font-display: block;
 	src: url('/fonts/sora-latin-ext-wght-normal.woff2') format('woff2-variations');
 	unicode-range:
 		U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
@@ -183,9 +182,4 @@ body {
 		-webkit-tap-highlight-color: transparent;
 		overflow-wrap: break-word;
 	}
-}
-
-@utility wordmark {
-	/* "TREBANAM" v hlavicke - 11px caps s vyraznym prostrihom, vzdy v akcente. */
-	@apply text-[11px] font-bold tracking-[0.1em] text-tn-primary-strong uppercase;
 }

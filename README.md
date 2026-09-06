@@ -19,7 +19,11 @@ the built client from `wwwroot`. `ARCHITECTURE.md` has the full blueprint.
 
 ## Installable
 
-The client is a PWA: it ships `static/manifest.webmanifest`, maskable icons and a service worker
+The client is a PWA. Launching it from the home screen icon opens `/app` directly, never the
+landing page: the manifest sets `start_url` to `/app`, and the landing page also forwards anyone
+who arrives there in standalone mode, which covers icons added before that was true.
+
+It ships `static/manifest.webmanifest`, maskable icons and a service worker
 (`TrebaNam.Client/src/service-worker.ts`) that precaches the build and falls back to the SPA shell
 when the network is gone. `/api/*` is never cached, so nothing stale is ever shown as list data.
 The service worker only exists in a production build, not under the Vite dev server.

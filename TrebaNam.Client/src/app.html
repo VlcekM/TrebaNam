@@ -13,13 +13,21 @@
 		<meta name="theme-color" content="#fbf8f3" media="(prefers-color-scheme: light)" />
 		<meta name="theme-color" content="#0f0f10" media="(prefers-color-scheme: dark)" />
 		<!--
-			Font stahujeme uz odtialto, nie az ked dobehne CSS. Spolu s font-display: optional
-			(app.css) to znamena, ze text sa vykresli rovno v Sore alebo ostane v systemovom
-			fonte - nikdy neprebehne vymena z jedneho do druheho.
+			Font stahujeme uz odtialto, nie az ked dobehne CSS. Spolu s font-display: block
+			(app.css) to znamena, ze text pocka na Soru a nikdy sa nevykresli v nahradnom
+			fonte. Obe podmnoziny idu naraz - latin-ext nesie makcene v menach z Google uctu
+			a docitanie az po prvom vykresleni by ich na chvilu skrylo.
 		-->
 		<link
 			rel="preload"
 			href="/fonts/sora-latin-wght-normal.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			href="/fonts/sora-latin-ext-wght-normal.woff2"
 			as="font"
 			type="font/woff2"
 			crossorigin

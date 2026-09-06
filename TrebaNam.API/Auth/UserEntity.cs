@@ -28,6 +28,9 @@ public class UserEntity
     /// <summary>Pristup na /app/admin. Nastavuje sa podla Admin:Emails v konfiguracii.</summary>
     public bool IsAdmin { get; set; }
 
+    /// <summary>Domacnost, do ktorej patri. Null = este si ziadnu nezalozil ani neprijal pozvanku.</summary>
+    public Guid? HouseholdID { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset LastLoginAt { get; set; }
