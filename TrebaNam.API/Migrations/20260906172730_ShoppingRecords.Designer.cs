@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TrebaNam.API;
@@ -11,9 +12,11 @@ using TrebaNam.API;
 namespace TrebaNam.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20260906172730_ShoppingRecords")]
+    partial class ShoppingRecords
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -160,11 +163,6 @@ namespace TrebaNam.API.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("added_by_user_id");
 
-                    b.Property<string>("BoughtQuantity")
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)")
-                        .HasColumnName("bought_quantity");
-
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasMaxLength(24)
@@ -188,11 +186,6 @@ namespace TrebaNam.API.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
                         .HasColumnName("name");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(280)
-                        .HasColumnType("character varying(280)")
-                        .HasColumnName("note");
 
                     b.Property<string>("Quantity")
                         .HasMaxLength(24)
@@ -226,11 +219,6 @@ namespace TrebaNam.API.Migrations
                     b.Property<Guid>("HouseholdID")
                         .HasColumnType("uuid")
                         .HasColumnName("household_id");
-
-                    b.Property<decimal?>("TotalCost")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasColumnName("total_cost");
 
                     b.HasKey("ID")
                         .HasName("pk_shopping_records");

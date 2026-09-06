@@ -41,8 +41,8 @@
   Tailwind by ich zapiekol do utilit ako literaly a dark mode by ich neprepisal.
 
   Paleta je "Cozy cream" z design handoffu, akcent ale nie terakotovy, lez zeleny
-  (#5EA758) - terakota sa bila s inym projektom. Vypln je svetla, takze text na nej je tmavy
-  (--primary-foreground) a akcentovy text na kreme berie tmavsi --tn-primary-strong.
+  (#5EA758) - terakota sa bila s inym projektom. Text na zelenej vypni je vzdy biely
+  (--primary-foreground), akcentovy text na kreme berie tmavsi --tn-primary-strong.
 */
 :root {
 	color-scheme: light;
@@ -78,8 +78,8 @@
 	--foreground: var(--tn-neutral-dark);
 	--card: #ffffff;
 	--card-foreground: var(--tn-neutral-dark);
-	/* Vypln akcentu je svetla, takze text na nej musi byt tmavy - biela by nebola citatelna. */
-	--primary-foreground: #16210f;
+	/* Text a ikony na zelenej vypni su biele, rovnako vo svetlej aj tmavej teme. */
+	--primary-foreground: #ffffff;
 	--muted: #f0ebe2;
 	--muted-foreground: #625d55;
 	--destructive: #c0392b;
@@ -113,7 +113,7 @@
 	--tn-shadow-float: 0 4px 18px rgba(0, 0, 0, 0.5);
 
 	--card: #1a1a1c;
-	--primary-foreground: #0f0f10;
+	--primary-foreground: #ffffff;
 	--muted: #232326;
 	--muted-foreground: #aab0a3;
 	--destructive: #f87171;
@@ -181,5 +181,62 @@ body {
 		@apply bg-background text-foreground;
 		-webkit-tap-highlight-color: transparent;
 		overflow-wrap: break-word;
+	}
+
+	/*
+		Nativny <dialog> sa inak objavi naraz. Prechod na display a overlay je diskretny, takze
+		bez allow-discrete by sa animoval len zanik; @starting-style dava tvar, z ktoreho sa
+		otvara. Pozadie kreslime tu, nie utilitou na ::backdrop, aby sa dalo rozsvietit s nim.
+	*/
+	dialog {
+		opacity: 0;
+		transform: translateY(8px) scale(0.98);
+		transition:
+			opacity 180ms ease,
+			transform 180ms ease,
+			display 180ms allow-discrete,
+			overlay 180ms allow-discrete;
+	}
+
+	dialog[open] {
+		opacity: 1;
+		transform: none;
+	}
+
+	@starting-style {
+		dialog[open] {
+			opacity: 0;
+			transform: translateY(8px) scale(0.98);
+		}
+	}
+
+	dialog::backdrop {
+		background-color: rgb(0 0 0 / 0);
+		transition:
+			background-color 180ms ease,
+			display 180ms allow-discrete,
+			overlay 180ms allow-discrete;
+	}
+
+	dialog[open]::backdrop {
+		background-color: rgb(0 0 0 / 0.4);
+	}
+
+	@starting-style {
+		dialog[open]::backdrop {
+			background-color: rgb(0 0 0 / 0);
+		}
+	}
+
+	/* Kto ma pohyb v systeme vypnuty, dostane rovnaku appku bez neho. */
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+			scroll-behavior: auto !important;
+		}
 	}
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TrebaNam.API;
@@ -11,9 +12,11 @@ using TrebaNam.API;
 namespace TrebaNam.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20260906184634_TripTotals")]
+    partial class TripTotals
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -188,11 +191,6 @@ namespace TrebaNam.API.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
                         .HasColumnName("name");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(280)
-                        .HasColumnType("character varying(280)")
-                        .HasColumnName("note");
 
                     b.Property<string>("Quantity")
                         .HasMaxLength(24)

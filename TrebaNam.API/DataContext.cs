@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TrebaNam.API.Auth;
 using TrebaNam.API.Households;
+using TrebaNam.API.Items;
+using TrebaNam.API.ShoppingRecords;
 
 namespace TrebaNam.API;
 
@@ -18,6 +20,10 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
 
     public DbSet<HouseholdEntity> Households { get; set; }
 
+    public DbSet<ItemEntity> Items { get; set; }
+
+    public DbSet<ShoppingRecordEntity> ShoppingRecords { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -31,6 +37,37 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
         modelBuilder.Entity<HouseholdEntity>()
             .HasIndex(h => h.InviteCode)
             .IsUnique();
+
+        // Zoznam sa vzdy cita cely pre jednu domacnost.
+        modelBuilder.Entity<ItemEntity>()
+            .HasIndex(i => i.HouseholdID);
+
+        // So zrusenou domacnostou nema jej zoznam co robit.
+        modelBuilder.Entity<ItemEntity>()
+            .HasOne<HouseholdEntity>()
+            .WithMany()
+            .HasForeignKey(i => i.HouseholdID)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ShoppingRecordEntity>()
+            .HasIndex(r => r.HouseholdID);
+
+        modelBuilder.Entity<ShoppingRecordEntity>()
+            .HasOne<HouseholdEntity>()
+            .WithMany()
+            .HasForeignKey(r => r.HouseholdID)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Bez toho by tabulka dostala nazov podla triedy, teda shopping_record_entity.
+        modelBuilder.Entity<ShoppingRecordItemEntity>()
+            .ToTable("shopping_record_items");
+
+        // Riadky nakupu nemaju zivot mimo svojho zaznamu, tak sa citaju aj mazu s nim.
+        modelBuilder.Entity<ShoppingRecordEntity>()
+            .HasMany(r => r.Items)
+            .WithOne()
+            .HasForeignKey(i => i.ShoppingRecordID)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Bez navigacnej vlastnosti - clenov citame dotazom, nie cez graf objektov.
         // Zmazanie domacnosti necha ludi bez nej, nie zmazanych.

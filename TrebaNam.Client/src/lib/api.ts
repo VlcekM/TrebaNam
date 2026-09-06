@@ -24,8 +24,17 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 export class ApiError extends Error {
 	constructor(
 		public status: number,
-		body: string
+		public body: string
 	) {
 		super(`API ${status}: ${body}`);
+	}
+
+	/** Telo ako objekt, ked ho API poslalo ako JSON; inak undefined. */
+	json<T>(): T | undefined {
+		try {
+			return JSON.parse(this.body) as T;
+		} catch {
+			return undefined;
+		}
 	}
 }

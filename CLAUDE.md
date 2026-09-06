@@ -38,11 +38,79 @@ dotnet ef migrations add Name --project TrebaNam.API -- "Host=localhost;Database
 
 ## App routes
 
-`/app` is "Need to buy", the home screen, and it bounces to `/app/household` for anyone without
-a household. `/app/household` is both the household screen and the onboarding form. Everything
-under `/app` shares one loader, `src/routes/app/+layout.ts`, which fetches the user and the
-household because the shell needs both; pages read them off layout data rather than fetching
-again, and a write is followed by `invalidateAll()`.
+`/app` is the home screen: a greeting, the two things people open the app for (add an item,
+start a shopping trip) and read-only cards summarising the list, the three most recent trips and
+the household. Each card is one big link to the screen it summarises: a tap anywhere on it opens
+that screen, and with a mouse an overlay fades in over the card saying where the click leads,
+because a card that is entirely clickable does not otherwise look it. It holds no controls of its
+own beyond the add dialog, so nothing here has to be kept in step with the screen that owns data.
+Every screen bounces to `/app/household` for anyone without a household.
+`/app/list` is the shopping list, `/app/shop` shop mode over that same list, `/app/history` the
+past trips and `/app/household` both the household screen and the onboarding form.
+Everything under `/app` shares one loader, `src/routes/app/+layout.ts`, which fetches the user and
+the household because the shell needs both; pages read them off layout data rather than fetching
+again, and a write is followed by `invalidateAll()`. Data only one screen needs - the items, the
+records - is loaded by that screen's own `+page.ts`, and home loads both because it shows both.
+
+## Shopping list
+
+Items hang off the household, never off a person; `ItemEntity.AddedByUserID` is only there so the
+row can show who put it there. Adding and editing share `ItemDialog.svelte` - the fields are the
+same, so an item passed in means edit and no item means create. It is a native `<dialog>`:
+modality, the focus trap and Escape are the browser's job, the component only keeps it in sync
+with the page's state and adds the one dismissal the browser does not give - a click on the
+backdrop, which is a click landing on the dialog itself because the form fills it edge to edge.
+
+Categories are fixed codes, listed in `ItemCategory.All` and mirrored in `src/lib/categories.ts`
+in the same order - that order is also the order of the groups on screen, and the human-readable
+names live only on the client. An unknown code reads as `other` rather than failing. Quantity is
+free text ("2 kg", "1 loaf"), because units are not ours to invent. There is no price per item -
+money is counted once per trip, not per row. An item can also carry a note ("the one in the blue
+pack"), shown under its name on the list and in shop mode where it is actually needed; the note
+belongs to the item on the list and never travels into a trip.
+
+Names are stored the way the list should read: a lowercase first letter is capitalised on the way
+in (`ItemName.Display`), the rest is left alone. The same list never holds the same thing twice -
+`ItemName.Key` strips diacritics, case and doubled spaces, so "Banány" and "banany" are one thing,
+and both adding and renaming answer 409 with the name already on the list for the dialog to show.
+
+The add dialog suggests what the household has bought before (`GET /api/items/suggestions`, built
+from the past trips and never from the current list, so nothing can be added twice). One field
+does both jobs: empty, it offers the most frequent things; typed into, it narrows them. Picking a
+suggestion fills the quantity and category from the last time too, and everything stays editable -
+it fills the form, it does not add the item.
+
+`IsChecked` belongs to the item, not to one screen, so both of you see the same ticks while
+shopping. Shop mode (`/app/shop`) writes each tick straight to the API and flips the row before
+the response lands, reverting it if the call fails; it is a sub-screen of the list, which is why
+`isActive` keeps the list nav row lit there.
+
+A row has two buttons: the circle takes the whole item, the one beside it opens a dialog for the
+part that actually made it into the cart (`ItemEntity.BoughtQuantity`, free text like the quantity
+itself, `PUT /api/items/{id}/bought`). The two states exclude each other, so ticking the circle
+clears a partial amount and setting one unticks the circle. A partly bought item stays unchecked,
+because the rest of it is still needed.
+
+Finishing a trip copies the checked items into a `ShoppingRecordEntity` and deletes them from the
+list - what stayed unchecked is what still needs buying. A partly bought item goes into the record
+with the amount that was bought and stays on the list with the note cleared; the remainder is never
+computed, because free-text quantities cannot be subtracted. The record's rows are copies, not
+references, so the trip does not change when someone later renames an item.
+
+A finished trip carries one optional total (`ShoppingRecordEntity.TotalCost`, euros - the app has
+one currency and does not ask). It is offered when the trip is finished and can be filled in or
+corrected later from `/app/history` (`PUT /api/shopping-records/{id}/total`), because the receipt
+is not always to hand at the till. The total is the only thing on a finished trip that changes;
+its rows never do.
+
+A trip can be deleted (`DELETE /api/shopping-records/{id}`, rows go with it), always behind a
+confirmation naming the date, because the button sits next to the total and the delete cannot be
+undone. Deleting a trip does not put its items back on the list - the trip was a copy of what was
+bought, not the items themselves.
+
+In the interface a finished shopping is a **trip**, never a "shop" - a shop is a place, and this
+is the outing. The code still says `ShoppingRecord`, so the database and the endpoints keep their
+names; only the copy in `messages/en.json` carries the word.
 
 ## Households
 
@@ -58,9 +126,11 @@ The look comes from `design_handoff_trebanam/` - direction **1a "Cozy cream"**: 
 warm cream, Sora, one strong accent. `Shopping List Mockups.dc.html` is the source of truth for
 screens and the handoff README lists every token, with one deliberate deviation: the accent is
 **green `#5EA758`**, not the handoff terracotta, which was too close to another project of ours.
-Read every `#C4553B` in the handoff as that green. Two consequences: the fill is light, so text on
-it uses the dark `text-primary-foreground` rather than white, and accent-coloured text on light
-surfaces uses `text-tn-primary-strong`, the same green darkened until it clears contrast.
+Read every `#C4553B` in the handoff as that green. Text and icons on the green fill are white
+(`text-primary-foreground` is white in both themes); accent-coloured text on light surfaces
+uses `text-tn-primary-strong`, the same green darkened until it clears contrast. `Logo.svelte`
+keeps a literal dark ink instead, because `favicon.svg` cannot read tokens and the two drawings
+must match.
 
 - **Never use `rounded-full` on buttons.** Use `rounded-lg` (10px, the handoff's small radius)
   instead. `rounded-full` stays fine for genuinely circular things - avatars, checkboxes, pills.
@@ -90,6 +160,12 @@ surfaces uses `text-tn-primary-strong`, the same green darkened until it clears 
 - Anything the sidebar shows loads in `src/routes/app/+layout.ts`, not in a page load, so the
   panel and the screen never disagree. After a write, call `invalidateAll()` rather than keeping
   a local copy.
+- Motion is small and everywhere the same. Dialogs open with a short fade and rise, backdrop
+  included - that lives in `app.css` on the `dialog` element itself (`@starting-style` plus
+  `allow-discrete`, which is why no dialog carries a `backdrop:` utility any more). Rows that
+  come and go use Svelte's `fade`/`slide` with `animate:flip`, and every duration goes through
+  `ms()` in `src/lib/motion.ts`, which returns 0 when the system asks for less motion; the same
+  preference also flattens CSS transitions in `app.css`. Nothing waits on an animation to work.
 - Sora is self-hosted: the variable woff2 files live in `static/fonts/` with hand-written
   `@font-face` rules in `src/app.css` and both subsets are preloaded from `app.html`. The rules
   say `font-display: block`, so text waits for Sora instead of rendering in a fallback first -

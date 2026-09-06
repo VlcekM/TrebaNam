@@ -36,3 +36,44 @@ export interface HouseholdInvite {
 	alreadyMember: boolean;
 	inAnotherHousehold: boolean;
 }
+
+/** Polozka nakupneho zoznamu z GET /api/items. */
+export interface Item {
+	id: string;
+	name: string;
+	quantity?: string;
+	category: string;
+	isChecked: boolean;
+	/** Odnesena cast mnozstva, ked sa v obchode kupila len cast. */
+	boughtQuantity?: string;
+	/** Poznamka pre toho, kto pojde nakupovat. */
+	note?: string;
+	addedByUserID: string;
+	createdAt: string;
+}
+
+/** Riadok ukonceneho nakupu - odpis polozky, ktora uz v zozname nie je. */
+export interface ShoppingRecordItem {
+	id: string;
+	name: string;
+	quantity?: string;
+	category: string;
+}
+
+/** Ukonceny nakup z GET /api/shopping-records. */
+export interface ShoppingRecord {
+	id: string;
+	completedByUserID: string;
+	completedAt: string;
+	/** Cena celeho nakupu v eurach; chyba, kym ju nikto nezadal. */
+	totalCost?: number;
+	items: ShoppingRecordItem[];
+}
+
+/** Vec, ktoru domacnost uz kupovala, z GET /api/items/suggestions. */
+export interface ItemSuggestion {
+	name: string;
+	quantity?: string;
+	category: string;
+	count: number;
+}

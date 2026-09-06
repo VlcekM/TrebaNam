@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TrebaNam.API;
@@ -11,9 +12,11 @@ using TrebaNam.API;
 namespace TrebaNam.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20260906170400_Items")]
+    partial class Items
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -160,17 +163,6 @@ namespace TrebaNam.API.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("added_by_user_id");
 
-                    b.Property<string>("BoughtQuantity")
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)")
-                        .HasColumnName("bought_quantity");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)")
-                        .HasColumnName("category");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -179,25 +171,11 @@ namespace TrebaNam.API.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("household_id");
 
-                    b.Property<bool>("IsChecked")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_checked");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
                         .HasColumnName("name");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(280)
-                        .HasColumnType("character varying(280)")
-                        .HasColumnName("note");
-
-                    b.Property<string>("Quantity")
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)")
-                        .HasColumnName("quantity");
 
                     b.HasKey("ID")
                         .HasName("pk_items");
@@ -206,76 +184,6 @@ namespace TrebaNam.API.Migrations
                         .HasDatabaseName("ix_items_household_id");
 
                     b.ToTable("items", (string)null);
-                });
-
-            modelBuilder.Entity("TrebaNam.API.ShoppingRecords.ShoppingRecordEntity", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CompletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("completed_at");
-
-                    b.Property<Guid>("CompletedByUserID")
-                        .HasColumnType("uuid")
-                        .HasColumnName("completed_by_user_id");
-
-                    b.Property<Guid>("HouseholdID")
-                        .HasColumnType("uuid")
-                        .HasColumnName("household_id");
-
-                    b.Property<decimal?>("TotalCost")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasColumnName("total_cost");
-
-                    b.HasKey("ID")
-                        .HasName("pk_shopping_records");
-
-                    b.HasIndex("HouseholdID")
-                        .HasDatabaseName("ix_shopping_records_household_id");
-
-                    b.ToTable("shopping_records", (string)null);
-                });
-
-            modelBuilder.Entity("TrebaNam.API.ShoppingRecords.ShoppingRecordItemEntity", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)")
-                        .HasColumnName("category");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)")
-                        .HasColumnName("name");
-
-                    b.Property<string>("Quantity")
-                        .HasMaxLength(24)
-                        .HasColumnType("character varying(24)")
-                        .HasColumnName("quantity");
-
-                    b.Property<Guid>("ShoppingRecordID")
-                        .HasColumnType("uuid")
-                        .HasColumnName("shopping_record_id");
-
-                    b.HasKey("ID")
-                        .HasName("pk_shopping_record_items");
-
-                    b.HasIndex("ShoppingRecordID")
-                        .HasDatabaseName("ix_shopping_record_items_shopping_record_id");
-
-                    b.ToTable("shopping_record_items", (string)null);
                 });
 
             modelBuilder.Entity("TrebaNam.API.Auth.UserEntity", b =>
@@ -295,31 +203,6 @@ namespace TrebaNam.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_items_households_household_id");
-                });
-
-            modelBuilder.Entity("TrebaNam.API.ShoppingRecords.ShoppingRecordEntity", b =>
-                {
-                    b.HasOne("TrebaNam.API.Households.HouseholdEntity", null)
-                        .WithMany()
-                        .HasForeignKey("HouseholdID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_shopping_records_households_household_id");
-                });
-
-            modelBuilder.Entity("TrebaNam.API.ShoppingRecords.ShoppingRecordItemEntity", b =>
-                {
-                    b.HasOne("TrebaNam.API.ShoppingRecords.ShoppingRecordEntity", null)
-                        .WithMany("Items")
-                        .HasForeignKey("ShoppingRecordID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_shopping_record_items_shopping_records_shopping_record_id");
-                });
-
-            modelBuilder.Entity("TrebaNam.API.ShoppingRecords.ShoppingRecordEntity", b =>
-                {
-                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }
