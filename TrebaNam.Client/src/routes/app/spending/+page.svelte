@@ -5,7 +5,14 @@
 	import { withoutTotalCount } from '$lib/counts';
 	import { money } from '$lib/money';
 	import { m } from '$lib/paraglide/messages.js';
-	import { monthOf, monthlyTotals, spendByCategory, totals, tripsInMonth } from '$lib/spending';
+	import {
+		earliestMonth,
+		monthOf,
+		monthlyTotals,
+		spendByCategory,
+		totals,
+		tripsInMonth
+	} from '$lib/spending';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -36,7 +43,12 @@
 			<p class="text-sm text-tn-meta">{data.household?.name}</p>
 		</div>
 
-		<MonthPicker bind:month disabledNext={month >= thisMonth} class="px-1.5" />
+		<MonthPicker
+			bind:month
+			from={earliestMonth(data.records)}
+			disabledNext={month >= thisMonth}
+			class="px-1.5"
+		/>
 
 		<section class="flex flex-col gap-4 rounded-2xl bg-tn-tint p-6">
 			<p class="text-[11px] font-bold tracking-[0.08em] text-tn-meta uppercase">

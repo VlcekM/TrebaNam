@@ -236,5 +236,6 @@
 	"history_total": "Total",
 	"history_trip_count_one": "1 trip",
 	"history_trip_count_few": "{count} trips",
-	"history_trip_count_other": "{count} trips"
+	"history_trip_count_other": "{count} trips",
+	"month_pick": "Pick a month"
 }

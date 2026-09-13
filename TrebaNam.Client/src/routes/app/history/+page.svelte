@@ -9,7 +9,7 @@
 	import { tripDate } from '$lib/dates';
 	import { listDot } from '$lib/lists';
 	import { money } from '$lib/money';
-	import { monthOf, totals, tripsInMonth, type MonthKey } from '$lib/spending';
+	import { earliestMonth, monthOf, totals, tripsInMonth, type MonthKey } from '$lib/spending';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { ShoppingRecord } from '$lib/types';
 	import type { PageProps } from './$types';
@@ -90,7 +90,12 @@
 					{/if}
 				</div>
 				{#if month}
-					<MonthPicker bind:month disabledNext={month >= thisMonth} class="flex-1 sm:max-w-xs" />
+					<MonthPicker
+						bind:month
+						from={earliestMonth(data.records)}
+						disabledNext={month >= thisMonth}
+						class="flex-1 sm:max-w-xs"
+					/>
 				{/if}
 			</div>
 

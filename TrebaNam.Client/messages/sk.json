@@ -236,5 +236,6 @@
 	"history_total": "Spolu",
 	"history_trip_count_one": "1 nákup",
 	"history_trip_count_few": "{count} nákupy",
-	"history_trip_count_other": "{count} nákupov"
+	"history_trip_count_other": "{count} nákupov",
+	"month_pick": "Vybrať mesiac"
 }

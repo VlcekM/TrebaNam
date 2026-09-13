@@ -144,3 +144,10 @@ export function monthlyTotals(records: readonly ShoppingRecord[], last: MonthKey
 export function monthsWithTrips(records: readonly ShoppingRecord[]) {
 	return [...new Set(records.map((record) => monthOf(record.completedAt)))].sort().reverse();
 }
+
+/** Najskorsi mesiac s nakupom - odtial zacina ponuka mesiacov. */
+export function earliestMonth(records: readonly ShoppingRecord[]) {
+	const months = monthsWithTrips(records);
+
+	return months[months.length - 1];
+}

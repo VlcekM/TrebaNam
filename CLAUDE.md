@@ -207,7 +207,8 @@ undone. Deleting a trip does not put its items back on the list - the trip was a
 bought, not the items themselves.
 
 `/app/history` can be narrowed to one month: a chip switches the list between every trip and a
-month picker (`MonthPicker`, arrows either side of the month name), and a tinted strip above the
+month picker (`MonthPicker`: arrows either side of the month name, and the name itself is a native
+`<select>` listing every month from the first trip to now, for jumping further than one step), and a tinted strip above the
 cards sums what is shown - the totals that exist, how many trips there are and how many carry no
 total, because a sum that silently skips a receipt would read as less spent. The filter lives in
 the screen's state, not in the URL, so the home-screen shortcut still opens everything.
