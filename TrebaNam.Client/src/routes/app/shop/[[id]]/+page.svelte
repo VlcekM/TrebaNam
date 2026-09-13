@@ -6,12 +6,14 @@
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import HashIcon from '@lucide/svelte/icons/hash';
 	import PlusIcon from '@lucide/svelte/icons/plus';
+	import SearchIcon from '@lucide/svelte/icons/search';
+	import XIcon from '@lucide/svelte/icons/x';
 	import { byCategory } from '$lib/categories';
 	import AmountsDialog from '$lib/components/AmountsDialog.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import ItemDialog from '$lib/components/ItemDialog.svelte';
 	import TripTotalDialog from '$lib/components/TripTotalDialog.svelte';
-	import { setItemChecked } from '$lib/items';
+	import { matchesSearch, setItemChecked } from '$lib/items';
 	import { listDot } from '$lib/lists';
 	import { formatLocale } from '$lib/locale';
 	import { ms } from '$lib/motion';
@@ -91,7 +93,7 @@
 			.map((one) => ({
 				list: one,
 				items: offered
-					.filter((item) => item.listID === one.id)
+					.filter((item) => item.listID === one.id && matchesSearch(item, query))
 					.sort((a, b) => collator.compare(a.name, b.name))
 			}))
 			.filter((one) => one.items.length > 0)
@@ -100,7 +102,15 @@
 	const items = $derived([...data.items, ...taken]);
 	const inCart = $derived(items.filter(isChecked));
 	const left = $derived(items.filter((item) => !isChecked(item)));
-	const groups = $derived(byCategory(left, data.household?.categories));
+	// Hladanie zuzuje len to, co este treba najst - kosik, pocty aj ukoncenie ostavaju cele,
+	// lebo hlada sa jedna vec na regali, nie iny nakup.
+	let query = $state('');
+	const groups = $derived(
+		byCategory(
+			left.filter((item) => matchesSearch(item, query)),
+			data.household?.categories
+		)
+	);
 	// Ciastocne kupene tiez patria do nakupu, takze ho maju cim ukoncit.
 	const partial = $derived(left.filter((item) => item.boughtQuantity));
 
@@ -205,6 +215,36 @@
 
 		{#if failed}
 			<p class="px-1.5 text-sm font-semibold text-destructive">{m.error_generic()}</p>
+		{/if}
+
+		<!-- Rovnake hladanie ako na zozname: az ked je co hladat, a len po tom, co este chyba. -->
+		{#if items.length > 5}
+			<label class="relative flex items-center">
+				<SearchIcon class="pointer-events-none absolute left-3 size-4 text-tn-meta" />
+				<input
+					bind:value={query}
+					type="search"
+					placeholder={m.list_search_placeholder()}
+					aria-label={m.list_search_label()}
+					class="h-11 w-full rounded-lg border border-input bg-card pr-10 pl-10 font-semibold outline-none focus-visible:border-tn-primary"
+				/>
+				{#if query}
+					<button
+						type="button"
+						onclick={() => (query = '')}
+						aria-label={m.list_search_clear()}
+						class="absolute right-1 inline-flex size-9 cursor-pointer items-center justify-center rounded-lg text-tn-meta transition hover:bg-muted"
+					>
+						<XIcon class="size-4" />
+					</button>
+				{/if}
+			</label>
+		{/if}
+
+		{#if query && groups.length === 0 && otherLists.length === 0}
+			<p class="px-1.5 text-[15px] leading-relaxed text-muted-foreground">
+				{m.list_search_empty({ query })}
+			</p>
 		{/if}
 
 		{#each groups as group (group.code)}

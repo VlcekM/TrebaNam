@@ -172,7 +172,9 @@ shopping. Shop mode writes each tick straight to the API and flips the row befor
 the response lands, reverting it if the call fails; it is a sub-screen of the list, which is why
 `isActive` keeps the list nav row lit there. Shop mode also has an add button in its header, because
 standing at the shelf is when people remember what else is missing; it opens the same `ItemDialog`
-over the list being shopped and the new row lands among the groups unticked.
+over the list being shopped and the new row lands among the groups unticked. The same search field
+as the list's sits above the groups there, narrowing only what is still to find - the cart, the
+counts and finishing are left alone, because at the shelf one looks for one thing.
 
 A row has two buttons: the circle takes the whole item, the one beside it opens `AmountsDialog`.
 That dialog holds both amounts at once - how much is needed (the item's own quantity) and how much
