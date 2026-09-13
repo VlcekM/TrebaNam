@@ -93,6 +93,8 @@
 	"color_slate": "Sivá",
 	"list_note_label": "Na čo je?",
 	"list_note_placeholder": "Na chatu",
+	"list_categories_label": "Skupiny na tomto zozname",
+	"list_categories_none": "Nechajte aspoň jednu skupinu, inak nie je kam vec dať.",
 	"list_create": "Založiť zoznam",
 	"list_create_pending": "Zakladám...",
 	"list_delete": "Zmazať zoznam",

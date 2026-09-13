@@ -83,6 +83,15 @@ screen, because which list is the weekly one only the household knows; the first
 the end of that row rather than beside the title, where on a phone they would push the name onto
 a second line. A new list opens straight away, because that is what it was made for.
 
+A list can also say which groups it offers (`ShoppingListEntity.Categories`, codes, chosen with
+the chips in `ListDialog`): the garden list has no use for dairy. An empty set means every group,
+including ones added later, and a choice that covers every group is stored as empty for that
+reason. The item dialog offers only the chosen list's groups, keeping the group of the item being
+edited even if the list no longer offers it, and a picked suggestion whose group the list does not
+offer falls to the first one it does. Items keep their code regardless, and `byCategory` shows
+whatever is there, so nothing vanishes when a list narrows its groups; dropping a group takes its
+code out of every list's choice.
+
 An item can be moved between lists: the add dialog grows a list field once there is more than one
 to choose from. That it will be bought at the cottage after all is something people find out
 after writing it down.

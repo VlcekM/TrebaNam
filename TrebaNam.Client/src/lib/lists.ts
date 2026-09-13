@@ -1,6 +1,6 @@
 import { api } from '$lib/api';
 import { m } from '$lib/paraglide/messages.js';
-import type { ShoppingList } from '$lib/types';
+import type { Category, ShoppingList } from '$lib/types';
 
 /** Rovnake hranice ako v ShoppingListEntity - formular nema pustit dalej, nez API prijme. */
 export const ListNameMaxLength = 60;
@@ -49,6 +49,8 @@ export interface ListFields {
 	name: string;
 	color: string;
 	note?: string;
+	/** Kody skupin na zozname; prazdne pole je vsetky, aj tie, co domacnost prida neskor. */
+	categories: string[];
 }
 
 export function createList(fields: ListFields) {
@@ -63,6 +65,23 @@ export function updateList(id: string, fields: ListFields) {
 		method: 'PUT',
 		body: JSON.stringify(fields)
 	});
+}
+
+/**
+ * Skupiny, z ktorych sa na zozname vybera. Zoznam bez vyberu bere vsetky; ten s vyberom bere
+ * len tie, ktore domacnost stale ma. Vec, ktora uz na zozname stoji, sa kodom neriadi a jej
+ * skupina sa ponuka dalej - inak by sa nedala ani upravit.
+ */
+export function listCategories(
+	list: ShoppingList | undefined,
+	categories: readonly Category[],
+	keep?: string
+) {
+	const chosen = list?.categories.length ? new Set(list.categories) : undefined;
+
+	return categories.filter(
+		(category) => !chosen || chosen.has(category.code) || category.code === keep
+	);
 }
 
 /** Zmaze zoznam aj s tym, co na nom ostalo. Posledny zoznam API zmazat nedovoli. */

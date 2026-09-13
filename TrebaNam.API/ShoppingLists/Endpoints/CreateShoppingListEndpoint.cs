@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using TrebaNam.API.Auth;
+using TrebaNam.API.Households;
 using TrebaNam.API.Realtime;
 
 namespace TrebaNam.API.ShoppingLists.Endpoints;
@@ -49,12 +50,15 @@ public class CreateShoppingListEndpoint(IDbContextFactory<DataContext> factory, 
             return;
         }
 
+        var groups = await HouseholdAccess.CategoriesAsync(user.HouseholdID.Value, context, ct);
+
         var list = new ShoppingListEntity
         {
             HouseholdID = user.HouseholdID.Value,
             Name = values.Name,
             Color = values.Color,
             Note = values.Note,
+            Categories = ShoppingListFieldsExtensions.Restrict(values.Categories, groups.Select(c => c.Code)),
             Position = existing.Count == 0 ? 0 : existing.Max(l => l.Position) + 1,
             CreatedAt = DateTimeOffset.UtcNow
         };

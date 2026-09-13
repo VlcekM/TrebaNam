@@ -216,6 +216,7 @@
 />
 
 <ListDialog
+	categories={data.household?.categories}
 	bind:open={listDialogOpen}
 	list={editingList ? list : undefined}
 	canDelete={lists.length > 1}

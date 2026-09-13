@@ -67,6 +67,14 @@ public class DeleteCategoryEndpoint(IDbContextFactory<DataContext> factory, Hous
         foreach (var favourite in favourites)
             favourite.Category = ItemCategory.Other;
 
+        // Zoznam, ktory si tuto skupinu vybral, ju uz vybranu mat nemoze; ostatne kody ostavaju.
+        var lists = await context.ShoppingLists
+            .Where(l => l.HouseholdID == household.ID && l.Categories.Contains(category.Code))
+            .ToListAsync(ct);
+
+        foreach (var list in lists)
+            list.Categories = list.Categories.Where(c => c != category.Code).ToList();
+
         context.HouseholdCategories.Remove(category);
 
         await context.SaveChangesAsync(ct);

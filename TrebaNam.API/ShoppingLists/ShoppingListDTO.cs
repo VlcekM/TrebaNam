@@ -11,6 +11,9 @@ public class ShoppingListDTO
 
     public string? Note { get; set; }
 
+    /// <summary>Kody skupin, z ktorych sa na zozname vybera. Prazdne pole je vsetky.</summary>
+    public List<string> Categories { get; set; } = [];
+
     public DateTimeOffset CreatedAt { get; set; }
 }
 
@@ -22,6 +25,7 @@ public static class ShoppingListMapping
         Name = list.Name,
         Color = list.Color,
         Note = list.Note,
+        Categories = list.Categories,
         CreatedAt = list.CreatedAt
     };
 }

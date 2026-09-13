@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
+	import { SvelteSet } from 'svelte/reactivity';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import {
 		createList,
@@ -11,22 +12,32 @@
 		listDot,
 		updateList
 	} from '$lib/lists';
+	import { categoryName } from '$lib/categories';
 	import { m } from '$lib/paraglide/messages.js';
 	import { sync } from '$lib/offline/state.svelte';
-	import type { ShoppingList } from '$lib/types';
+	import type { Category, ShoppingList } from '$lib/types';
 
 	// Bez zoznamu sa zaklada novy, so zoznamom sa upravuje ten otvoreny - polia su v oboch
 	// pripadoch rovnake, takze to je jeden dialog a nie dva takmer identicke.
 	let {
 		open = $bindable(false),
 		list,
+		categories = [],
 		canDelete = false
-	}: { open?: boolean; list?: ShoppingList; canDelete?: boolean } = $props();
+	}: {
+		open?: boolean;
+		list?: ShoppingList;
+		categories?: Category[];
+		canDelete?: boolean;
+	} = $props();
 
 	let dialog = $state<HTMLDialogElement>();
 	let name = $state('');
 	let color = $state<string>(LIST_COLORS[0]);
 	let note = $state('');
+	// Ktore skupiny sa na zozname ponukaju. Vsetky zaskrtnute sa posielaju ako ziadne - to je
+	// "vsetky" aj pre skupiny, ktore domacnost prida az potom.
+	const chosen = new SvelteSet<string>();
 	let pending = $state(false);
 	let failed = $state(false);
 	// Zmazanie berie so sebou aj to, co na zozname ostalo, takze sa pyta priamo tu.
@@ -40,6 +51,12 @@
 			name = list?.name ?? '';
 			color = list?.color ?? LIST_COLORS[0];
 			note = list?.note ?? '';
+			chosen.clear();
+			for (const code of list?.categories.length
+				? list.categories
+				: categories.map((category) => category.code)) {
+				chosen.add(code);
+			}
 			failed = false;
 			confirming = false;
 			dialog.showModal();
@@ -56,10 +73,13 @@
 		pending = true;
 		failed = false;
 
+		const all = categories.every((category) => chosen.has(category.code));
+
 		const fields = {
 			name: name.trim(),
 			color,
-			note: note.trim() || undefined
+			note: note.trim() || undefined,
+			categories: all ? [] : categories.filter((c) => chosen.has(c.code)).map((c) => c.code)
 		};
 
 		try {
@@ -80,6 +100,14 @@
 			pending = false;
 		}
 	}
+
+	function toggle(code: string) {
+		if (chosen.has(code)) chosen.delete(code);
+		else chosen.add(code);
+	}
+
+	// Zoznam bez jedinej skupiny by nemal kam dat prvu vec.
+	const none = $derived(categories.length > 0 && !categories.some((c) => chosen.has(c.code)));
 
 	async function remove() {
 		if (pending || !list) return;
@@ -172,6 +200,43 @@
 			></textarea>
 		</label>
 
+		<!--
+			Skupiny, z ktorych sa na tomto zozname vybera. Do zahrady sa mliecne veci nepisu, tak
+			nech ich pole pri pridavani ani neponuka. Zaskrtavacie policka a nie vyberove pole,
+			lebo skupin je pat az tridsat a vidiet ich vsetky naraz je cely zmysel.
+		-->
+		{#if categories.length}
+			<fieldset class="flex flex-col gap-2">
+				<legend class="text-[11px] font-bold tracking-[0.08em] text-tn-meta uppercase">
+					{m.list_categories_label()}
+				</legend>
+
+				<div class="flex flex-wrap gap-2">
+					{#each categories as category (category.id)}
+						{@const on = chosen.has(category.code)}
+						<button
+							type="button"
+							role="checkbox"
+							aria-checked={on}
+							onclick={() => toggle(category.code)}
+							class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg px-3 text-[13px] font-bold transition {on
+								? 'bg-tn-tint text-tn-primary-strong'
+								: 'bg-muted text-tn-meta hover:text-foreground'}"
+						>
+							{#if on}
+								<CheckIcon class="size-3.5" />
+							{/if}
+							{categoryName(category)}
+						</button>
+					{/each}
+				</div>
+
+				{#if none}
+					<p class="text-sm font-semibold text-destructive">{m.list_categories_none()}</p>
+				{/if}
+			</fieldset>
+		{/if}
+
 		{#if confirming}
 			<p class="text-sm leading-relaxed text-tn-meta">
 				{m.list_delete_body({ name: name.trim() })}
@@ -214,7 +279,7 @@
 
 			<button
 				type="submit"
-				disabled={pending || !name.trim() || !sync.online}
+				disabled={pending || !name.trim() || none || !sync.online}
 				class="inline-flex h-11 cursor-pointer items-center rounded-lg bg-tn-primary px-5 font-bold text-primary-foreground transition hover:bg-tn-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
 			>
 				{#if pending && !confirming}

@@ -13,6 +13,7 @@
 		setItemFavourite,
 		updateItem
 	} from '$lib/items';
+	import { listCategories } from '$lib/lists';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { Category, Item, ItemSuggestion, ShoppingList } from '$lib/types';
 
@@ -66,6 +67,20 @@
 	const usuals = $derived(matches.filter((suggestion) => suggestion.isFavourite).slice(0, 4));
 
 	const bought = $derived(matches.filter((suggestion) => !suggestion.isFavourite).slice(0, 6));
+
+	// Pole so skupinami ponuka len tie, ktore si zvoleny zoznam vybral; skupina upravovanej
+	// veci ostava, aj ked uz na zozname nie je, inak by sa vec nedala ulozit bez presunu.
+	const offered = $derived(
+		listCategories(lists.find((one) => one.id === listID) ?? list, categories, item?.category)
+	);
+
+	// Navrh alebo prehodenie zoznamu moze nechat vybranu skupinu, ktoru tento zoznam neponuka -
+	// vtedy padne na prvu ponukanu, tak ako "ostatne" byva dnom vsade inde.
+	$effect(() => {
+		if (offered.length && !offered.some((one) => one.code === category)) {
+			category = offered[0].code;
+		}
+	});
 
 	// Nativny <dialog> uz vie modalitu, past na fokus aj zatvorenie Escapom, takze ho
 	// len drzime v sulade so stavom stranky namiesto vlastnej implementacie toho isteho.
@@ -303,7 +318,7 @@
 					bind:value={category}
 					class="h-12 w-full cursor-pointer rounded-lg border border-input bg-background px-3 font-semibold outline-none focus-visible:border-tn-primary"
 				>
-					{#each categories as one (one.id)}
+					{#each offered as one (one.id)}
 						<option value={one.code}>{categoryName(one)}</option>
 					{/each}
 				</select>

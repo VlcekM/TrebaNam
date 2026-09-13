@@ -64,6 +64,8 @@
 	"color_slate": "Slate",
 	"list_note_label": "What is it for?",
 	"list_note_placeholder": "For the cottage",
+	"list_categories_label": "Groups on this list",
+	"list_categories_none": "Keep at least one group, or there is nowhere to put a thing.",
 	"list_create": "Create list",
 	"list_create_pending": "Creating...",
 	"list_delete": "Delete list",

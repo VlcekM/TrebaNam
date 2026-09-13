@@ -32,6 +32,14 @@ public class ShoppingListEntity
     /// <summary>Poradie zoznamov v prepinaci. Novy pribuda na koniec.</summary>
     public int Position { get; set; }
 
+    /// <summary>
+    /// Kody skupin, z ktorych sa na tomto zozname vybera. Do zahrady sa mliecne veci nepisu a
+    /// pole so vsetkymi skupinami by len zavadzalo. Prazdne znamena vsetky - aj tie, ktore
+    /// domacnost prida az potom - takze zoznam, ktory si nic nevybral, nikdy o skupinu nepride.
+    /// Polozky nesu svoj kod dalej, nech uz skupina na zozname je alebo nie.
+    /// </summary>
+    public List<string> Categories { get; set; } = [];
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public const int NameMaxLength = 60;

@@ -45,6 +45,8 @@ export interface ShoppingList {
 	/** Kod farby, nie hex - odtien k nemu drzi klient, aby sedel aj v tmavom rezime. */
 	color: string;
 	note?: string;
+	/** Kody skupin, z ktorych sa na zozname vybera. Prazdne pole znamena vsetky. */
+	categories: string[];
 	createdAt: string;
 }
 
