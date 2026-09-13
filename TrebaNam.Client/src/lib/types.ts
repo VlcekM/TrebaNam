@@ -48,6 +48,9 @@ export interface ShoppingList {
 	/** Kody skupin, z ktorych sa na zozname vybera. Prazdne pole znamena vsetky. */
 	categories: string[];
 	createdAt: string;
+	/** Kedy a kto z tohto zoznamu prave nakupuje; chyba, ked nikto. */
+	shoppingStartedAt?: string;
+	shoppingStartedByUserID?: string;
 }
 
 /** Nahlad pozvanky z GET /api/households/invite/{code}. */

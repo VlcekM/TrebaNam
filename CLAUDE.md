@@ -48,6 +48,17 @@ it summarises: a tap anywhere on it opens that screen, and with a mouse an overl
 where the click goes, because a card that is entirely clickable does not otherwise look it. It
 holds no controls of its own beyond the add dialog, so nothing here has to be kept in step with
 the screen that owns data.
+The trip button is full width. While someone is shopping it turns into "trip in progress" with
+that person's avatar and leads into the same shop mode - for whoever started it that is going
+back, for everyone else joining in, and either way it beats starting a second trip, so it shows
+even when no single list could be picked. Opening shop mode is what starts a trip
+(`POST /api/lists/{id}/shopping`, `ShoppingListEntity.ShoppingStartedAt` and
+`ShoppingStartedByUserID`): the first person to open it is the one it names, later arrivals
+change nothing, and the hub tells the other phone through the lists topic. Finishing clears it
+and so does the cancel button at the bottom of shop mode (`DELETE /api/lists/{id}/shopping`),
+behind a confirmation, because a trip nobody ends would otherwise run on the home screen for
+ever; cancelling touches only that flag, never the ticks. Both writes go through the queue like a
+tick, so a shop with no signal still starts.
 Every screen bounces to `/app/household` for anyone without a household.
 `/app/list/[[id]]` is one shopping list and `/app/shop/[[id]]` shop mode over that same list. The
 id is optional and no id means the first list, so `/app/list` stays a single address worth saving

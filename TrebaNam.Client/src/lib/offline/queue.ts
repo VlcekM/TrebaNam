@@ -7,12 +7,14 @@ import {
 	type PendingWrite
 } from '$lib/offline/db';
 import { sync } from '$lib/offline/state.svelte';
-import type { Item, ItemSuggestion, ShoppingRecord } from '$lib/types';
+import type { Item, ItemSuggestion, ShoppingList, ShoppingRecord } from '$lib/types';
 
 /** Adresy, ktorych ulozenu odpoved zapisy menia. Rovnake, ake tiahnu obrazovky. */
 export const ItemsPath = '/api/items';
 
 export const RecordsPath = '/api/shopping-records';
+
+export const ListsPath = '/api/lists';
 
 const SuggestionsPath = '/api/items/suggestions';
 
@@ -80,6 +82,11 @@ export function patchItems(change: (items: Item[]) => Item[]) {
 
 export function patchRecords(change: (records: ShoppingRecord[]) => ShoppingRecord[]) {
 	return patchSnapshot<ShoppingRecord[]>(RecordsPath, change, []);
+}
+
+/** Prepise ulozene zoznamy - zatial len to, ci sa z niektoreho prave nakupuje. */
+export function patchLists(change: (lists: ShoppingList[]) => ShoppingList[]) {
+	return patchSnapshot<ShoppingList[]>(ListsPath, change, []);
 }
 
 /** Polozky zo zoznamu, ktore prezili aj vypadok siete - podklad pre predpoved. */

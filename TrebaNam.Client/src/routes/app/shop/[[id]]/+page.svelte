@@ -2,17 +2,19 @@
 	import { flip } from 'svelte/animate';
 	import { fade, slide } from 'svelte/transition';
 	import { SvelteSet } from 'svelte/reactivity';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import HashIcon from '@lucide/svelte/icons/hash';
 	import { byCategory } from '$lib/categories';
 	import AmountsDialog from '$lib/components/AmountsDialog.svelte';
+	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import TripTotalDialog from '$lib/components/TripTotalDialog.svelte';
 	import { setItemChecked } from '$lib/items';
 	import { listDot } from '$lib/lists';
 	import { formatLocale } from '$lib/locale';
 	import { ms } from '$lib/motion';
 	import { m } from '$lib/paraglide/messages.js';
+	import { cancelShopping, startShopping } from '$lib/shopping';
 	import type { Item } from '$lib/types';
 	import type { PageProps } from './$types';
 
@@ -34,6 +36,35 @@
 	let partialOpen = $state(false);
 
 	const list = $derived(data.list);
+
+	/**
+	 * Otvorit rezim nakupu znamena nakupovat, tak to hned povieme domacnosti: na prehlade sa
+	 * druhemu ukaze "nakup prave bezi" namiesto "ist nakupovat". Kto pride k beziacemu nakupu,
+	 * nic nemeni - zacal ho ten prvy. Na odpoved sa necaka, hub aj tak nacita vsetko odznova.
+	 */
+	$effect(() => {
+		if (list.shoppingStartedAt) return;
+
+		startShopping(list.id)
+			.then(() => invalidateAll())
+			.catch(() => {});
+	});
+
+	// Kto nakupuje s nami - ten, kto nakup zacal, pokial to nie sme my sami.
+	const startedBy = $derived(
+		list.shoppingStartedByUserID && list.shoppingStartedByUserID !== data.user.id
+			? data.household?.members.find((member) => member.id === list.shoppingStartedByUserID)
+			: undefined
+	);
+
+	let cancelOpen = $state(false);
+
+	async function cancel() {
+		await cancelShopping(list.id);
+		await invalidateAll();
+		await goto(`/app/list/${list.id}`);
+	}
+
 	const isChecked = $derived((item: Item) => overrides[item.id] ?? item.isChecked);
 
 	/**
@@ -130,6 +161,13 @@
 			<p class="text-2xl font-bold">
 				{m.shop_progress({ checked: inCart.length, count: items.length })}
 			</p>
+
+			<!-- Dvaja v jednom obchode vidia tie iste odskrtnutia, tak nech vedia, ze nie su sami. -->
+			{#if startedBy}
+				<p class="text-[13px] font-bold text-tn-primary-strong">
+					{m.shop_started_by({ name: startedBy.givenName ?? startedBy.name ?? '' })}
+				</p>
+			{/if}
 
 			<!-- Ciastocne kupene sa do "x z y" nezmestia, ale ukoncit nakup uz staci, tak o nich vieme. -->
 			{#if partial.length}
@@ -330,8 +368,30 @@
 		>
 			{m.shop_finish()}
 		</button>
+
+		<!--
+			Nakup, ktory nikto neukonci, by na prehlade bezal navzdy - kto otvoril rezim omylom
+			alebo odisiel s prazdnym kosikom, ma ako to domacnosti odvolat. Tiche tlacidlo pod
+			tym hlavnym, aby sa s ukoncenim nepomylilo.
+		-->
+		<button
+			type="button"
+			onclick={() => (cancelOpen = true)}
+			class="inline-flex h-11 cursor-pointer items-center justify-center rounded-lg px-4 font-bold text-tn-meta transition hover:bg-muted"
+		>
+			{m.shop_cancel()}
+		</button>
 	</div>
 </main>
+
+<ConfirmDialog
+	bind:open={cancelOpen}
+	title={m.shop_cancel_title()}
+	body={m.shop_cancel_body()}
+	confirmLabel={m.shop_cancel_confirm()}
+	pendingLabel={m.shop_cancel_pending()}
+	confirm={cancel}
+/>
 
 <AmountsDialog bind:open={partialOpen} item={partialOf} />
 <TripTotalDialog

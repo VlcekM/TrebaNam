@@ -122,6 +122,10 @@ public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory, Hous
         foreach (var partial in bought.Where(i => !i.IsChecked))
             partial.BoughtQuantity = null;
 
+        // Nakup skoncil, takze na prehlade uz nema co bezat.
+        list.ShoppingStartedAt = null;
+        list.ShoppingStartedByUserID = null;
+
         await context.SaveChangesAsync(ct);
 
         // Zoznam sa tym vyprazdnil a v historii pribudol nakup - druha strana ma co menit na oboch.

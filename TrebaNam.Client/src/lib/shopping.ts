@@ -1,8 +1,73 @@
 import { get } from 'svelte/store';
 import { readSnapshot } from '$lib/offline/db';
-import { cachedItems, newID, patchItems, patchRecords, write } from '$lib/offline/queue';
+import {
+	cachedItems,
+	newID,
+	patchItems,
+	patchLists,
+	patchRecords,
+	write
+} from '$lib/offline/queue';
 import { userStore } from '$lib/stores/user';
 import type { Item, ShoppingList, ShoppingRecord } from '$lib/types';
+
+/**
+ * Povie domacnosti, ze sa z tohto zoznamu prave nakupuje. Vola sa pri otvoreni rezimu nakupu
+ * a bezici nakup nemeni - kto sa pripoji, pripoji sa k tomu, co uz zacal ten prvy. Ide cez rad
+ * ako odskrtavanie: v obchode signal nebyva a nakup sa preto nema cim zdrzat.
+ */
+export function startShopping(listID: string) {
+	const startedAt = new Date().toISOString();
+	const startedBy = get(userStore)?.id ?? '';
+
+	return write<ShoppingList>(
+		{ method: 'POST', path: `/api/lists/${listID}/shopping` },
+		async () => {
+			let changed: ShoppingList | undefined;
+
+			await patchLists((lists) =>
+				lists.map((list) => {
+					if (list.id !== listID) return list;
+
+					changed = list.shoppingStartedAt
+						? list
+						: { ...list, shoppingStartedAt: startedAt, shoppingStartedByUserID: startedBy };
+
+					return changed;
+				})
+			);
+
+			return changed ?? ({ id: listID } as ShoppingList);
+		}
+	);
+}
+
+/** Zrusi bezici nakup bez ukoncenia; co je odskrtnute, ostava odskrtnute. */
+export function cancelShopping(listID: string) {
+	return write<ShoppingList>(
+		{ method: 'DELETE', path: `/api/lists/${listID}/shopping` },
+		async () => {
+			let changed: ShoppingList | undefined;
+
+			await patchLists((lists) =>
+				lists.map((list) => {
+					if (list.id !== listID) return list;
+
+					changed = { ...list, shoppingStartedAt: undefined, shoppingStartedByUserID: undefined };
+
+					return changed;
+				})
+			);
+
+			return changed ?? ({ id: listID } as ShoppingList);
+		}
+	);
+}
+
+/** Zoznam, z ktoreho sa prave nakupuje - v poradi prepinaca, takze pri dvoch ten prvy. */
+export function shoppingInProgress(lists: ShoppingList[]) {
+	return lists.find((list) => list.shoppingStartedAt);
+}
 
 /**
  * Ukonci nakup jedneho zoznamu - odskrtnute polozky sa stanu zaznamom a zo zoznamu zmiznu.
@@ -47,6 +112,15 @@ export function finishShopping(listID: string, totalCost?: number, extraItemIDs:
 			};
 
 			await patchRecords((records) => [record, ...records]);
+
+			// Nakup skoncil - na prehlade uz nebezi, presne ako to spravi server.
+			await patchLists((all) =>
+				all.map((one) =>
+					one.id === listID
+						? { ...one, shoppingStartedAt: undefined, shoppingStartedByUserID: undefined }
+						: one
+				)
+			);
 
 			// Cele polozky zo zoznamu odchadzaju, ciastocne v nom ostavaju - zvysok stale treba.
 			await patchItems((all) =>

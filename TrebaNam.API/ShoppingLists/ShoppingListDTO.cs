@@ -15,6 +15,11 @@ public class ShoppingListDTO
     public List<string> Categories { get; set; } = [];
 
     public DateTimeOffset CreatedAt { get; set; }
+
+    /// <summary>Kedy a kto z tohto zoznamu prave nakupuje; prazdne, ked nikto.</summary>
+    public DateTimeOffset? ShoppingStartedAt { get; set; }
+
+    public Guid? ShoppingStartedByUserID { get; set; }
 }
 
 public static class ShoppingListMapping
@@ -26,6 +31,8 @@ public static class ShoppingListMapping
         Color = list.Color,
         Note = list.Note,
         Categories = list.Categories,
-        CreatedAt = list.CreatedAt
+        CreatedAt = list.CreatedAt,
+        ShoppingStartedAt = list.ShoppingStartedAt,
+        ShoppingStartedByUserID = list.ShoppingStartedByUserID
     };
 }

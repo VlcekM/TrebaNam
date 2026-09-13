@@ -9,6 +9,7 @@
 	import { listDot } from '$lib/lists';
 	import { money } from '$lib/money';
 	import { m } from '$lib/paraglide/messages.js';
+	import { shoppingInProgress } from '$lib/shopping';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -40,6 +41,14 @@
 
 		return index < 0 ? undefined : { member: members[index], index };
 	});
+
+	/**
+	 * Nakup, ktory prave bezi, prebije "ist nakupovat": druhy z domacnosti sa ma pripojit k
+	 * tomu, co uz zacalo, a nie zacinat vlastny. Ten, kto ho zacal, sa tym istym tlacidlom vrati.
+	 */
+	const running = $derived(shoppingInProgress(lists));
+	const runner = $derived(running ? buyerOf(running.shoppingStartedByUserID ?? '') : undefined);
+	const mine = $derived(running?.shoppingStartedByUserID === data.user.id);
 </script>
 
 <svelte:head>
@@ -92,11 +101,47 @@
 			</button>
 		</div>
 
-		<!-- Bez poloziek nie je co odskrtavat, tak rezim nakupu ani neponukam. -->
-		{#if only}
+		<!--
+			Ist nakupovat je cez celu sirku - je to druhy dovod, preco sa appka otvara, a na
+			telefone sa ma trafit palcom. Bezi-li uz nakup, tlacidlo to povie a vedie donho:
+			pre toho, kto ho zacal, je to navrat, pre ostatnych pripojenie sa k nemu.
+		-->
+		{#if running}
+			<a
+				href="/app/shop/{running.id}"
+				class="flex w-full cursor-pointer items-center gap-3 rounded-lg bg-tn-primary px-4 py-3 text-primary-foreground transition hover:bg-tn-primary-hover"
+			>
+				{#if runner}
+					<MemberAvatar
+						member={runner.member}
+						index={runner.index}
+						class="size-9 text-[13px] ring-tn-primary"
+					/>
+				{:else}
+					<ShoppingCartIcon class="size-5 flex-none" />
+				{/if}
+
+				<span class="flex min-w-0 flex-1 flex-col">
+					<span class="truncate font-bold">{m.shop_in_progress({ list: running.name })}</span>
+					<span class="truncate text-[13px] opacity-85">
+						{mine
+							? m.shop_in_progress_you()
+							: m.shop_in_progress_by({
+									name: runner?.member.givenName ?? runner?.member.name ?? ''
+								})}
+					</span>
+				</span>
+
+				<span class="flex flex-none items-center gap-1.5 text-[13px] font-bold">
+					{mine ? m.shop_in_progress_continue() : m.shop_in_progress_join()}
+					<ArrowRightIcon class="size-4 flex-none" />
+				</span>
+			</a>
+		{:else if only}
+			<!-- Bez poloziek nie je co odskrtavat, tak rezim nakupu ani neponukam. -->
 			<a
 				href="/app/shop/{only.id}"
-				class="inline-flex h-[50px] cursor-pointer items-center justify-center gap-2 rounded-lg bg-tn-tint px-5 font-bold text-tn-primary-strong transition hover:brightness-95 sm:self-start"
+				class="inline-flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-tn-tint px-5 font-bold text-tn-primary-strong transition hover:brightness-95"
 			>
 				<ShoppingCartIcon class="size-4 flex-none" />
 				{m.shop_start()}

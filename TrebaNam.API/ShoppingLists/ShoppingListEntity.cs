@@ -42,6 +42,16 @@ public class ShoppingListEntity
 
     public DateTimeOffset CreatedAt { get; set; }
 
+    /// <summary>
+    /// Kedy sa z tohto zoznamu zacalo nakupovat a kto. Nakup, ktory prave bezi, nie je zaznam -
+    /// ten vznikne az pri ukonceni - ale druhy telefon o nom ma vediet: na prehlade sa mu
+    /// namiesto "ist nakupovat" ukaze "nakup prave bezi" a jednym klepnutim sa pripoji. Prazdne
+    /// znamena, ze nikto nenakupuje; ukoncenie aj zrusenie nakupu to vymazu.
+    /// </summary>
+    public DateTimeOffset? ShoppingStartedAt { get; set; }
+
+    public Guid? ShoppingStartedByUserID { get; set; }
+
     public const int NameMaxLength = 60;
 
     public const int ColorMaxLength = 16;
