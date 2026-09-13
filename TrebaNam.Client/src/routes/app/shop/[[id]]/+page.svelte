@@ -10,6 +10,7 @@
 	import TripTotalDialog from '$lib/components/TripTotalDialog.svelte';
 	import { setItemChecked } from '$lib/items';
 	import { listDot } from '$lib/lists';
+	import { formatLocale } from '$lib/locale';
 	import { ms } from '$lib/motion';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { Item } from '$lib/types';
@@ -45,10 +46,17 @@
 	const taken = $derived(data.others.filter((item) => pulled.has(item.id)));
 	// Na ponuku ide len to, co este nikto nema v kosiku - odskrtnute inde nie je nase.
 	const offered = $derived(data.others.filter((item) => !isChecked(item) || pulled.has(item.id)));
+	// Aj tu podla abecedy, rovnako ako v skupinach - hlada sa ocami po nazve.
+	const collator = new Intl.Collator(formatLocale());
 	const otherLists = $derived(
 		data.lists
 			.filter((one) => one.id !== list.id)
-			.map((one) => ({ list: one, items: offered.filter((item) => item.listID === one.id) }))
+			.map((one) => ({
+				list: one,
+				items: offered
+					.filter((item) => item.listID === one.id)
+					.sort((a, b) => collator.compare(a.name, b.name))
+			}))
 			.filter((one) => one.items.length > 0)
 	);
 
