@@ -124,6 +124,7 @@
 	"shop_finish_pending": "Finishing...",
 	"shop_nothing_checked": "Check something off first.",
 	"shop_empty": "The list is empty, so there is nothing to shop for.",
+	"shop_other_list": "Also on {name}",
 	"history_page_title": "TrebaNam - Past trips",
 	"history_title": "Past trips",
 	"history_empty": "No finished trip yet. Whatever you check off on a shopping trip lands here.",

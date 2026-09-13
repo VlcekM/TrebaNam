@@ -153,6 +153,7 @@
 	"shop_progress": "{checked} z {count} v košíku",
 	"shop_in_cart": "V košíku",
 	"shop_empty": "Zoznam je prázdny, takže nie je čo nakupovať.",
+	"shop_other_list": "Aj na zozname {name}",
 	"shop_amounts": "Množstvá",
 	"shop_amounts_title": "Koľko?",
 	"shop_amounts_hint": "{name} zostane na zozname tak či tak - keď máte všetko, odškrtnite krúžok.",

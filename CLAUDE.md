@@ -167,7 +167,12 @@ because the rest of it is still needed.
 
 A trip belongs to one list, because that is how shopping happens - one shop, one outing. Finishing
 it copies the checked items of that list into a `ShoppingRecordEntity` and deletes them from the
-list - what stayed unchecked is what still needs buying. The record keeps the list's name and
+list - what stayed unchecked is what still needs buying. Things from the household's other lists
+can still be taken along: shop mode lists them under their own list's name below the groups, and
+ticking one pulls it into this trip (`FinishShoppingRequest.ExtraItemIDs`), because that this shop
+also has what the cottage needs is found out at the shelf. Only items ticked from this screen
+travel - what someone ticked on another list is their cart, not ours - and the choice lives in
+the screen alone, so a reload leaves such an item ticked on its own list to be finished there. The record keeps the list's name and
 colour as a copy (`ListName`, `ListColor`), so history says where the trip came from even after
 the list is renamed or gone. A partly bought item goes into the record
 with the amount that was bought and stays on the list with the note cleared; the remainder is never

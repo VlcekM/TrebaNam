@@ -19,10 +19,18 @@ public class FinishShoppingRequest
 
     /// <summary>Kolko cely nakup stal; nepovinne, sumu sa da doplnit aj neskor.</summary>
     public decimal? TotalCost { get; set; }
+
+    /// <summary>
+    /// Veci z inych zoznamov domacnosti, ktore sa vzali na tomto nakupe - ze ma obchod aj to
+    /// na chatu, sa zisti az v nom. Idu po ID, nie cez vsetko odskrtnute na inych zoznamoch:
+    /// tam mohol prave niekto iny nakupovat svoje a jeho kosik nie je nas.
+    /// </summary>
+    public List<Guid>? ExtraItemIDs { get; set; }
 }
 
 /// <summary>
 /// Ukonci nakup jedneho zoznamu: z odskrtnutych poloziek spravi zaznam a zo zoznamu ich odoberie.
+/// K nim sa pridaju veci z inych zoznamov, ktore klient vymenoval - tie sa vzali popri tom.
 /// Neodskrtnute ostavaju - to je to, co sa nekupilo a treba to nabuduce. Ciastocne kupene
 /// idu do zaznamu odnesenym mnozstvom, ale zo zoznamu neodchadzaju.
 /// </summary>
@@ -67,8 +75,12 @@ public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory, Hous
             }
         }
 
+        var extra = (req.ExtraItemIDs ?? []).Distinct().ToList();
+
         var bought = await context.Items
-            .Where(i => i.ListID == list.ID && (i.IsChecked || i.BoughtQuantity != null))
+            .Where(i => i.HouseholdID == list.HouseholdID
+                && (i.ListID == list.ID || extra.Contains(i.ID))
+                && (i.IsChecked || i.BoughtQuantity != null))
             .OrderBy(i => i.CreatedAt)
             .ToListAsync(ct);
 

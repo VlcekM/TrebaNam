@@ -11,8 +11,14 @@
 	let {
 		open = $bindable(false),
 		record,
-		listID
-	}: { open?: boolean; record?: ShoppingRecord; listID?: string } = $props();
+		listID,
+		extraItemIDs = []
+	}: {
+		open?: boolean;
+		record?: ShoppingRecord;
+		listID?: string;
+		extraItemIDs?: string[];
+	} = $props();
 
 	let dialog = $state<HTMLDialogElement>();
 	let amount = $state('');
@@ -45,7 +51,7 @@
 			if (record) {
 				await setTripTotal(record.id, total);
 			} else if (listID) {
-				await finishShopping(listID, total);
+				await finishShopping(listID, total, extraItemIDs);
 				// Nakup skoncil a jeho polozky su uz len v historii - tam sa clovek aj pozrie.
 				await goto('/app/history');
 			}

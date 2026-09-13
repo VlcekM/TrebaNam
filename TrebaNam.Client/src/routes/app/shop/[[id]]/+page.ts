@@ -19,5 +19,10 @@ export const load: PageLoad = async ({ parent, fetch, params }) => {
 
 	const items = (await loadJson<Item[]>('/api/items', fetch)) ?? [];
 
-	return { list, items: items.filter((item) => item.listID === list.id) };
+	// Aj veci z ostatnych zoznamov: ze v tomto obchode maju aj to na chatu, sa zisti az v nom.
+	return {
+		list,
+		items: items.filter((item) => item.listID === list.id),
+		others: items.filter((item) => item.listID !== list.id)
+	};
 };

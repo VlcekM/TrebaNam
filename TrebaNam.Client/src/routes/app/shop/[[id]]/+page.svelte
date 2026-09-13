@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { flip } from 'svelte/animate';
 	import { fade, slide } from 'svelte/transition';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { invalidateAll } from '$app/navigation';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import PercentIcon from '@lucide/svelte/icons/percent';
@@ -8,6 +9,7 @@
 	import AmountsDialog from '$lib/components/AmountsDialog.svelte';
 	import TripTotalDialog from '$lib/components/TripTotalDialog.svelte';
 	import { setItemChecked } from '$lib/items';
+	import { listDot } from '$lib/lists';
 	import { ms } from '$lib/motion';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { Item } from '$lib/types';
@@ -31,8 +33,26 @@
 	let partialOpen = $state(false);
 
 	const list = $derived(data.list);
-	const items = $derived(data.items);
 	const isChecked = $derived((item: Item) => overrides[item.id] ?? item.isChecked);
+
+	/**
+	 * Veci z inych zoznamov, ktore sa vzali na tomto nakupe. Zaskrtnutie ich sem pritiahne a
+	 * ukoncenie ich posle spolu s ostatnymi; co je odskrtnute na inom zozname bez nas, je cudzi
+	 * kosik a tu sa neukazuje. Pamata si to len tato obrazovka - po obnoveni ostanu odskrtnute
+	 * na svojom zozname, kde ich ukonci ten, kto tam nakupuje.
+	 */
+	const pulled = new SvelteSet<string>();
+	const taken = $derived(data.others.filter((item) => pulled.has(item.id)));
+	// Na ponuku ide len to, co este nikto nema v kosiku - odskrtnute inde nie je nase.
+	const offered = $derived(data.others.filter((item) => !isChecked(item) || pulled.has(item.id)));
+	const otherLists = $derived(
+		data.lists
+			.filter((one) => one.id !== list.id)
+			.map((one) => ({ list: one, items: offered.filter((item) => item.listID === one.id) }))
+			.filter((one) => one.items.length > 0)
+	);
+
+	const items = $derived([...data.items, ...taken]);
 	const inCart = $derived(items.filter(isChecked));
 	const left = $derived(items.filter((item) => !isChecked(item)));
 	const groups = $derived(byCategory(left, data.household?.categories));
@@ -44,6 +64,11 @@
 
 		overrides[item.id] = next;
 		failed = false;
+
+		if (item.listID !== list.id) {
+			if (next) pulled.add(item.id);
+			else pulled.delete(item.id);
+		}
 
 		try {
 			await setItemChecked(item.id, next);
@@ -177,6 +202,72 @@
 			</section>
 		{/each}
 
+		<!--
+			Co je na ostatnych zoznamoch, tiez sa da vziat - ze tento obchod ma aj to na chatu, sa
+			zisti az pri regali. Po zoznamoch a nie po skupinach, lebo tu sa uz nechodi po
+			oddeleniach, tu sa len pozera, ci sa nieco nehodi.
+		-->
+		{#each otherLists as other (other.list.id)}
+			<section class="flex flex-col gap-2" animate:flip={{ duration: ms(220) }}>
+				<h2
+					class="flex items-center gap-2 px-1.5 text-[11px] font-bold tracking-[0.08em] text-tn-meta uppercase"
+				>
+					<span class="size-2 flex-none rounded-full {listDot(other.list.color)}"></span>
+					{m.shop_other_list({ name: other.list.name })}
+				</h2>
+
+				<ul class="flex flex-col rounded-2xl border border-tn-muted/40 bg-card px-4 shadow-xs">
+					{#each other.items as item (item.id)}
+						<li
+							class="border-t border-tn-muted/40 first:border-t-0"
+							animate:flip={{ duration: ms(220) }}
+							in:fade={{ duration: ms(180) }}
+							out:slide={{ duration: ms(180) }}
+						>
+							<button
+								type="button"
+								onclick={() => toggle(item)}
+								aria-pressed={isChecked(item)}
+								class="flex w-full cursor-pointer items-center gap-3 py-4 text-left"
+							>
+								{#if isChecked(item)}
+									<span
+										class="inline-flex size-[26px] flex-none items-center justify-center rounded-full bg-tn-primary text-primary-foreground"
+										aria-hidden="true"
+									>
+										<CheckIcon class="size-4" />
+									</span>
+								{:else}
+									<span
+										class="size-[26px] flex-none rounded-full border-2 border-tn-primary"
+										aria-hidden="true"
+									></span>
+								{/if}
+
+								<span class="flex min-w-0 flex-1 flex-col gap-0.5">
+									<span
+										class="text-[17px] font-bold {isChecked(item)
+											? 'text-tn-faint line-through'
+											: ''}"
+									>
+										{item.name}
+									</span>
+
+									{#if item.note && !isChecked(item)}
+										<span class="text-[13px] leading-snug text-tn-meta">{item.note}</span>
+									{/if}
+								</span>
+
+								{#if item.quantity && !isChecked(item)}
+									<span class="flex-none text-sm text-tn-faint">{item.quantity}</span>
+								{/if}
+							</button>
+						</li>
+					{/each}
+				</ul>
+			</section>
+		{/each}
+
 		{#if inCart.length}
 			<section class="flex flex-col gap-2">
 				<h2 class="px-1.5 text-[11px] font-bold tracking-[0.08em] text-tn-primary-strong uppercase">
@@ -184,7 +275,7 @@
 				</h2>
 
 				<ul class="flex flex-col rounded-2xl bg-tn-tint px-4">
-					{#each inCart as item (item.id)}
+					{#each inCart.filter((item) => item.listID === list.id) as item (item.id)}
 						<li
 							class="border-t border-tn-muted/40 first:border-t-0"
 							animate:flip={{ duration: ms(220) }}
@@ -214,7 +305,7 @@
 			</section>
 		{/if}
 
-		{#if items.length === 0}
+		{#if items.length === 0 && otherLists.length === 0}
 			<section
 				class="rounded-2xl border border-tn-muted/40 bg-card px-6 py-12 text-center shadow-xs"
 			>
@@ -235,4 +326,8 @@
 </main>
 
 <AmountsDialog bind:open={partialOpen} item={partialOf} />
-<TripTotalDialog bind:open={finishOpen} listID={list.id} />
+<TripTotalDialog
+	bind:open={finishOpen}
+	listID={list.id}
+	extraItemIDs={taken.filter(isChecked).map((item) => item.id)}
+/>

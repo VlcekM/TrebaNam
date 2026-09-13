@@ -2,7 +2,7 @@ import { get } from 'svelte/store';
 import { readSnapshot } from '$lib/offline/db';
 import { cachedItems, newID, patchItems, patchRecords, write } from '$lib/offline/queue';
 import { userStore } from '$lib/stores/user';
-import type { ShoppingList, ShoppingRecord } from '$lib/types';
+import type { Item, ShoppingList, ShoppingRecord } from '$lib/types';
 
 /**
  * Ukonci nakup jedneho zoznamu - odskrtnute polozky sa stanu zaznamom a zo zoznamu zmiznu.
@@ -11,14 +11,17 @@ import type { ShoppingList, ShoppingRecord } from '$lib/types';
  * nakup dostane meno uz v telefone, historia si ho zapise hned a na server odide, ked sa da.
  * Rovnake meno znamena, ze ani z dvakrat odoslaneho ukoncenia nebudu dva nakupy.
  */
-export function finishShopping(listID: string, totalCost?: number) {
+export function finishShopping(listID: string, totalCost?: number, extraItemIDs: string[] = []) {
 	const id = newID();
+	const extra = new Set(extraItemIDs);
+	// Vec z tohto zoznamu alebo jedna z tych, ktore sa vzali z inych - to iste, co robi server.
+	const taken = (item: Item) => item.listID === listID || extra.has(item.id);
 
 	return write<ShoppingRecord>(
 		{
 			method: 'POST',
 			path: '/api/shopping-records',
-			body: { id, listID, totalCost: totalCost ?? null }
+			body: { id, listID, totalCost: totalCost ?? null, extraItemIDs }
 		},
 		async () => {
 			const items = await cachedItems();
@@ -26,9 +29,7 @@ export function finishShopping(listID: string, totalCost?: number) {
 			const list = lists.find((one) => one.id === listID);
 
 			// To iste, co robi server: cele odskrtnute aj ciastocne kupene, v poradi pridania.
-			const bought = items.filter(
-				(item) => item.listID === listID && (item.isChecked || item.boughtQuantity)
-			);
+			const bought = items.filter((item) => taken(item) && (item.isChecked || item.boughtQuantity));
 
 			const record: ShoppingRecord = {
 				id,
@@ -50,11 +51,9 @@ export function finishShopping(listID: string, totalCost?: number) {
 			// Cele polozky zo zoznamu odchadzaju, ciastocne v nom ostavaju - zvysok stale treba.
 			await patchItems((all) =>
 				all
-					.filter((item) => !(item.listID === listID && item.isChecked))
+					.filter((item) => !(taken(item) && item.isChecked))
 					.map((item) =>
-						item.listID === listID && item.boughtQuantity
-							? { ...item, boughtQuantity: undefined }
-							: item
+						taken(item) && item.boughtQuantity ? { ...item, boughtQuantity: undefined } : item
 					)
 			);
 
