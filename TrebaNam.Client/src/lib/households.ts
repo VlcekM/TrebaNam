@@ -1,4 +1,5 @@
 import { api } from '$lib/api';
+import { insertAlphabetically } from '$lib/categories';
 import type { Household } from '$lib/types';
 
 /** Odkaz, ktory sa posiela druhemu clenovi domacnosti. */
@@ -29,12 +30,28 @@ export function setCategoryOrder(order: string[]) {
 	});
 }
 
-/** Vlastna skupina domacnosti. Kod si k nej odvodi server, tu ide len nazov. */
-export function createCategory(name: string) {
-	return api<Household>('/api/households/me/categories', {
+/**
+ * Vlastna skupina domacnosti. Kod si k nej odvodi server, tu ide len nazov. Server ju da na
+ * koniec, lebo nazvy zakladnych skupin pozna len klient - tak ju odtial rovno presunieme tam,
+ * kam patri podla abecedy. Druhy zapis je zvlast: skupina uz existuje, aj keby poradie nepreslo.
+ */
+export async function createCategory(name: string) {
+	const household = await api<Household>('/api/households/me/categories', {
 		method: 'POST',
 		body: JSON.stringify({ name })
 	});
+
+	const added = household.categories.at(-1);
+
+	if (!added) return household;
+
+	const order = insertAlphabetically(household.categories, added);
+
+	if (order.every((category, index) => category.id === household.categories[index].id)) {
+		return household;
+	}
+
+	return setCategoryOrder(order.map((category) => category.id));
 }
 
 /** Premenovanie skupiny. Kod ostava, takze polozky v nej nikam neprechadzaju. */

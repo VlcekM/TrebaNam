@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { flip } from 'svelte/animate';
+	import ArrowDownAZIcon from '@lucide/svelte/icons/arrow-down-a-z';
 	import CopyIcon from '@lucide/svelte/icons/copy';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
@@ -8,7 +9,7 @@
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import UserMinusIcon from '@lucide/svelte/icons/user-minus';
-	import { categoryName } from '$lib/categories';
+	import { alphabetical, categoryName } from '$lib/categories';
 	import { memberCount as memberCountText } from '$lib/counts';
 	import CategoryDialog from '$lib/components/CategoryDialog.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
@@ -21,11 +22,12 @@
 		renameHousehold,
 		setCategoryOrder
 	} from '$lib/households';
+	import { listDot, setListOrder } from '$lib/lists';
 	import { formatLocale } from '$lib/locale';
 	import { ms } from '$lib/motion';
 	import { userStore } from '$lib/stores/user';
 	import { m } from '$lib/paraglide/messages.js';
-	import type { Category, HouseholdMember } from '$lib/types';
+	import type { Category, HouseholdMember, ShoppingList } from '$lib/types';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -44,6 +46,7 @@
 	// Poradie skupin prekreslime hned a zapis posleme popri tom - inak by kazde klepnutie
 	// cakalo na server a preskladat zoznam by trvalo dlhsie nez prejst obchod.
 	let movedOrder = $state<Category[] | undefined>();
+	let movedLists = $state<ShoppingList[] | undefined>();
 
 	// Skupinu zaklada aj premenuva ten isty dialog; bez skupiny je to nova.
 	let editingCategory = $state<Category | undefined>();
@@ -55,6 +58,11 @@
 
 	const memberCount = $derived(household?.members.length ?? 0);
 	const order = $derived(movedOrder ?? household?.categories ?? []);
+	const listOrder = $derived(movedLists ?? data.lists);
+	// Uz abecedne zoradene skupiny nema tlacidlo co preskladat.
+	const sorted = $derived(
+		alphabetical(order).every((category, index) => category.id === order[index].id)
+	);
 
 	const since = $derived(
 		household
@@ -110,10 +118,7 @@
 		}
 	}
 
-	async function move(index: number, delta: number) {
-		const next = [...order];
-
-		[next[index], next[index + delta]] = [next[index + delta], next[index]];
+	async function reorder(next: Category[]) {
 		movedOrder = next;
 		failed = false;
 
@@ -125,6 +130,37 @@
 			movedOrder = undefined;
 		} catch {
 			movedOrder = undefined;
+			failed = true;
+		}
+	}
+
+	function move(index: number, delta: number) {
+		const next = [...order];
+
+		[next[index], next[index + delta]] = [next[index + delta], next[index]];
+
+		return reorder(next);
+	}
+
+	// Abeceda je abeceda jazyka appky, lebo zakladne skupiny sa v nom aj citaju; kto chodi po
+	// obchode inak, si ich sipkami preskladaju spat.
+	function sortAlphabetically() {
+		return reorder(alphabetical(order));
+	}
+
+	async function moveList(index: number, delta: number) {
+		const next = [...listOrder];
+
+		[next[index], next[index + delta]] = [next[index + delta], next[index]];
+		movedLists = next;
+		failed = false;
+
+		try {
+			await setListOrder(next.map((list) => list.id));
+			await invalidateAll();
+			movedLists = undefined;
+		} catch {
+			movedLists = undefined;
 			failed = true;
 		}
 	}
@@ -265,15 +301,28 @@
 						{m.household_order_heading()}
 					</h2>
 
-					<button
-						type="button"
-						onclick={() => openCategory()}
-						aria-label={m.category_new()}
-						title={m.category_new()}
-						class="inline-flex size-9 flex-none cursor-pointer items-center justify-center rounded-lg text-tn-meta transition hover:bg-muted"
-					>
-						<PlusIcon class="size-4" />
-					</button>
+					<div class="flex flex-none items-center gap-1">
+						<button
+							type="button"
+							onclick={sortAlphabetically}
+							disabled={sorted}
+							aria-label={m.household_order_sort()}
+							title={m.household_order_sort()}
+							class="inline-flex size-9 flex-none cursor-pointer items-center justify-center rounded-lg text-tn-meta transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"
+						>
+							<ArrowDownAZIcon class="size-4" />
+						</button>
+
+						<button
+							type="button"
+							onclick={() => openCategory()}
+							aria-label={m.category_new()}
+							title={m.category_new()}
+							class="inline-flex size-9 flex-none cursor-pointer items-center justify-center rounded-lg text-tn-meta transition hover:bg-muted"
+						>
+							<PlusIcon class="size-4" />
+						</button>
+					</div>
 				</div>
 
 				<p class="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -314,6 +363,59 @@
 								onclick={() => move(index, 1)}
 								disabled={index === order.length - 1}
 								aria-label={m.household_order_down({ name: label })}
+								class="inline-flex size-9 flex-none cursor-pointer items-center justify-center rounded-lg text-tn-meta transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"
+							>
+								<ChevronDownIcon class="size-4" />
+							</button>
+						</li>
+					{/each}
+				</ul>
+			</section>
+
+			<!--
+				Poradie zoznamov v prepinaci. Zoznamy sa zakladaju a upravuju na obrazovke zoznamu,
+				ale poradie je vec celej domacnosti, tak sedi tu vedla poradia skupin.
+			-->
+			<section class="rounded-2xl border border-tn-muted/40 bg-card p-6 shadow-xs">
+				<h2 class="text-[11px] font-bold tracking-[0.08em] text-tn-meta uppercase">
+					{m.household_lists_heading()}
+				</h2>
+
+				<p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+					{m.household_lists_body()}
+				</p>
+
+				<ul class="mt-3 flex flex-col">
+					{#each listOrder as list, index (list.id)}
+						<li
+							class="flex items-center gap-3 border-t border-tn-muted/40 py-2 first:border-t-0 first:pt-0"
+							animate:flip={{ duration: ms(220) }}
+						>
+							<span class="w-6 flex-none text-[13px] font-bold text-tn-faint">{index + 1}</span>
+
+							<a
+								href="/app/list/{list.id}"
+								class="flex min-w-0 flex-1 items-center gap-2 font-bold hover:underline"
+							>
+								<span class="size-2 flex-none rounded-full {listDot(list.color)}"></span>
+								<span class="truncate">{list.name}</span>
+							</a>
+
+							<button
+								type="button"
+								onclick={() => moveList(index, -1)}
+								disabled={index === 0}
+								aria-label={m.household_lists_up({ name: list.name })}
+								class="inline-flex size-9 flex-none cursor-pointer items-center justify-center rounded-lg text-tn-meta transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"
+							>
+								<ChevronUpIcon class="size-4" />
+							</button>
+
+							<button
+								type="button"
+								onclick={() => moveList(index, 1)}
+								disabled={index === listOrder.length - 1}
+								aria-label={m.household_lists_down({ name: list.name })}
 								class="inline-flex size-9 flex-none cursor-pointer items-center justify-center rounded-lg text-tn-meta transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30"
 							>
 								<ChevronDownIcon class="size-4" />

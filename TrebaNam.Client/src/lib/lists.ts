@@ -69,3 +69,11 @@ export function updateList(id: string, fields: ListFields) {
 export function deleteList(id: string) {
 	return api<void>(`/api/lists/${id}`, { method: 'DELETE' });
 }
+
+/** Zoznamy v novom poradi, po ID. Server si poradie doplni na uplne, takze staci poslat to nove. */
+export function setListOrder(order: string[]) {
+	return api<ShoppingList[]>('/api/lists/order', {
+		method: 'PUT',
+		body: JSON.stringify({ order })
+	});
+}

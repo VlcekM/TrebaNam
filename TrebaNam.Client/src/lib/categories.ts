@@ -1,4 +1,5 @@
 import { m } from '$lib/paraglide/messages.js';
+import { formatLocale } from '$lib/locale';
 import type { Category, Item, ShoppingRecordItem } from '$lib/types';
 
 /** Kody, s ktorymi domacnost zacina - rovnake ako ItemCategory.Defaults v API. */
@@ -62,4 +63,38 @@ export function byCategory<T extends Item | ShoppingRecordItem>(
 	}
 
 	return groups.filter((group) => group.items.length > 0);
+}
+
+/**
+ * Skupiny podla abecedy v jazyku appky - zakladne sa porovnavaju podla prekladu, lebo tak ich
+ * clovek cita. "Ostatne" ostava posledne: je to dno, na ktore pada vsetko bez skupiny, a na
+ * zozname aj v obchode patri az za vsetko, co ma vlastne oddelenie.
+ */
+export function alphabetical(categories: readonly Category[]) {
+	const collator = new Intl.Collator(formatLocale());
+
+	return [...categories].sort((a, b) => {
+		if (a.code === 'other' || b.code === 'other') return a.code === 'other' ? 1 : -1;
+
+		return collator.compare(categoryName(a), categoryName(b));
+	});
+}
+
+/**
+ * Kam novu skupinu zaradit: pred prvu, ktora je podla abecedy za nou. Server ju dava na
+ * koniec, lebo nazvy zakladnych skupin pozna len klient; v abecednom zozname tak skonci tam,
+ * kam patri, a v inak zoradenom aspon nie na konci za "ostatne".
+ */
+export function insertAlphabetically(categories: readonly Category[], added: Category) {
+	const collator = new Intl.Collator(formatLocale());
+	const rest = categories.filter((category) => category.id !== added.id);
+	const name = categoryName(added);
+
+	let index = rest.findIndex(
+		(category) => category.code === 'other' || collator.compare(categoryName(category), name) > 0
+	);
+
+	if (index === -1) index = rest.length;
+
+	return [...rest.slice(0, index), added, ...rest.slice(index)];
 }

@@ -76,7 +76,10 @@ is still on it, since items hang off the list and nowhere else; finished trips s
 are copies of what was bought.
 
 The switcher is a row of chips under the list title, present even when there is only one - the
-second one has to be discoverable from somewhere. Editing this list and starting a new one sit at
+second one has to be discoverable from somewhere. Their order is the household's (`ShoppingListEntity.Position`,
+`PUT /api/lists/order`), set with the same up and down arrows as the groups on the household
+screen, because which list is the weekly one only the household knows; the first is what
+`/app/list` opens. Editing this list and starting a new one sit at
 the end of that row rather than beside the title, where on a phone they would push the name onto
 a second line. A new list opens straight away, because that is what it was made for.
 
@@ -105,7 +108,11 @@ Items still store the code (`ItemEntity.Category`), so a trip already finished n
 
 The order of the rows is the order the groups appear in on the list and in shop mode
 (`PUT /api/households/me/categories`), because walking one shop twice is the thing the list is
-meant to prevent. Adding, renaming and dropping go through the same group of endpoints. `other`
+meant to prevent. A button on the household screen sorts them A to Z for whoever does not
+walk one shop, and a new group lands where it belongs alphabetically rather than at the end;
+both are the client's doing (`alphabetical`, `insertAlphabetically` in `src/lib/categories.ts`),
+because the six default names exist only as translations and the server cannot compare them.
+`other` stays last in either case - it is the floor, not a group. Adding, renaming and dropping go through the same group of endpoints. `other`
 cannot be dropped - it is the floor everything else falls to, and dropping any other group moves
 its items and usuals there rather than deleting them. An unknown code reads as `other` rather
 than failing, and `byCategory` still shows what carries one, because a group changing underneath
