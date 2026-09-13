@@ -170,7 +170,9 @@ about the form, so it saves on the spot and the dialog stays open.
 `IsChecked` belongs to the item, not to one screen, so both of you see the same ticks while
 shopping. Shop mode writes each tick straight to the API and flips the row before
 the response lands, reverting it if the call fails; it is a sub-screen of the list, which is why
-`isActive` keeps the list nav row lit there.
+`isActive` keeps the list nav row lit there. Shop mode also has an add button in its header, because
+standing at the shelf is when people remember what else is missing; it opens the same `ItemDialog`
+over the list being shopped and the new row lands among the groups unticked.
 
 A row has two buttons: the circle takes the whole item, the one beside it opens `AmountsDialog`.
 That dialog holds both amounts at once - how much is needed (the item's own quantity) and how much

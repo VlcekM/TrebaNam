@@ -5,9 +5,11 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import HashIcon from '@lucide/svelte/icons/hash';
+	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { byCategory } from '$lib/categories';
 	import AmountsDialog from '$lib/components/AmountsDialog.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
+	import ItemDialog from '$lib/components/ItemDialog.svelte';
 	import TripTotalDialog from '$lib/components/TripTotalDialog.svelte';
 	import { setItemChecked } from '$lib/items';
 	import { listDot } from '$lib/lists';
@@ -58,6 +60,10 @@
 	);
 
 	let cancelOpen = $state(false);
+
+	// Pri regali si clovek spomenie, co doma chyba. Pridava sa tym istym dialogom ako na
+	// zozname a nova vec pristane medzi skupiny neodskrtnuta - to je to, co sa ide vziat.
+	let addOpen = $state(false);
 
 	async function cancel() {
 		await cancelShopping(list.id);
@@ -150,12 +156,25 @@
 					{m.shop_title()} · {list.name}
 				</h1>
 
-				<a
-					href="/app/list/{list.id}"
-					class="flex-none text-[13px] font-bold text-tn-primary-strong hover:underline"
-				>
-					{m.shop_exit()}
-				</a>
+				<div class="flex flex-none items-center gap-2">
+					<button
+						type="button"
+						onclick={() => (addOpen = true)}
+						aria-label={m.item_add()}
+						title={m.item_add()}
+						class="inline-flex h-8 cursor-pointer items-center gap-1 rounded-lg bg-tn-primary px-2.5 text-[13px] font-bold text-primary-foreground transition hover:bg-tn-primary-hover"
+					>
+						<PlusIcon class="size-4" />
+						<span class="hidden sm:inline">{m.item_add()}</span>
+					</button>
+
+					<a
+						href="/app/list/{list.id}"
+						class="text-[13px] font-bold text-tn-primary-strong hover:underline"
+					>
+						{m.shop_exit()}
+					</a>
+				</div>
 			</div>
 
 			<p class="text-2xl font-bold">
@@ -383,6 +402,8 @@
 		</button>
 	</div>
 </main>
+
+<ItemDialog bind:open={addOpen} {list} lists={data.lists} categories={data.household?.categories} />
 
 <ConfirmDialog
 	bind:open={cancelOpen}
