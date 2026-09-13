@@ -125,7 +125,11 @@ because the six default names exist only as translations and the server cannot c
 cannot be dropped - it is the floor everything else falls to, and dropping any other group moves
 its items and usuals there rather than deleting them. An unknown code reads as `other` rather
 than failing, and `byCategory` still shows what carries one, because a group changing underneath
-is no reason for a thing to vanish off the list. Quantity is free text ("2 kg", "1 loaf"), because
+is no reason for a thing to vanish off the list. Within a group the rows read A to Z in the app's language (`byCategory` sorts
+them), because at the shelf you look for a thing by name, not by when it was written down. A
+list longer than a handful of rows gets a search field under the switcher; it matches name and
+note without diacritics or case (`matchesSearch`), narrows only what is shown and leaves the
+counts and the trip alone. Quantity is free text ("2 kg", "1 loaf"), because
 units are not ours to invent. There is no price per item - money is counted once per trip, not
 per row. An item can also carry a note ("the one in the blue pack"), shown under its name on the
 list and in shop mode where it is actually needed; the note

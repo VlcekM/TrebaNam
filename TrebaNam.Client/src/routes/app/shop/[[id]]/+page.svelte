@@ -4,7 +4,7 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { invalidateAll } from '$app/navigation';
 	import CheckIcon from '@lucide/svelte/icons/check';
-	import PercentIcon from '@lucide/svelte/icons/percent';
+	import HashIcon from '@lucide/svelte/icons/hash';
 	import { byCategory } from '$lib/categories';
 	import AmountsDialog from '$lib/components/AmountsDialog.svelte';
 	import TripTotalDialog from '$lib/components/TripTotalDialog.svelte';
@@ -190,7 +190,7 @@
 									? 'bg-tn-tint text-[13px] text-tn-primary-strong'
 									: 'text-tn-meta hover:bg-muted'}"
 							>
-								<PercentIcon class="size-4 flex-none" />
+								<HashIcon class="size-4 flex-none" />
 
 								{#if item.boughtQuantity}
 									{m.shop_partial_got({ quantity: item.boughtQuantity })}

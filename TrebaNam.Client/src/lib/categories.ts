@@ -44,11 +44,15 @@ export function byCategory<T extends Item | ShoppingRecordItem>(
 	categories: readonly Category[] = []
 ) {
 	const known = new Set(categories.map((category) => category.code));
+	// V skupine podla abecedy, nie podla pridania: na regali sa hlada ocami po nazve.
+	const collator = new Intl.Collator(formatLocale());
+	const of = (code: string) =>
+		items.filter((item) => item.category === code).sort((a, b) => collator.compare(a.name, b.name));
 
 	const groups = categories.map((category) => ({
 		code: category.code,
 		label: categoryName(category),
-		items: items.filter((item) => item.category === category.code)
+		items: of(category.code)
 	}));
 
 	for (const item of items) {
@@ -58,7 +62,7 @@ export function byCategory<T extends Item | ShoppingRecordItem>(
 		groups.push({
 			code: item.category,
 			label: builtinLabel(item.category),
-			items: items.filter((other) => other.category === item.category)
+			items: of(item.category)
 		});
 	}
 

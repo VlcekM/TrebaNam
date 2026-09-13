@@ -1,11 +1,14 @@
 <script lang="ts">
 	import PencilIcon from '@lucide/svelte/icons/pencil';
+	import SearchIcon from '@lucide/svelte/icons/search';
+	import XIcon from '@lucide/svelte/icons/x';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import ShoppingCartIcon from '@lucide/svelte/icons/shopping-cart';
 	import { flip } from 'svelte/animate';
 	import { fade, slide } from 'svelte/transition';
 	import { byCategory } from '$lib/categories';
 	import { listCount } from '$lib/counts';
+	import { matchesSearch } from '$lib/items';
 	import ItemDialog from '$lib/components/ItemDialog.svelte';
 	import ListDialog from '$lib/components/ListDialog.svelte';
 	import MemberAvatar from '$lib/components/MemberAvatar.svelte';
@@ -28,7 +31,10 @@
 	const list = $derived(data.list);
 	const lists = $derived(data.lists);
 	const items = $derived(data.items);
-	const groups = $derived(byCategory(items, data.household?.categories));
+	// Hladanie zuzuje, co je vidiet, nic viac - pocty v hlavicke aj nakup su stale za cely zoznam.
+	let query = $state('');
+	const shown = $derived(items.filter((item) => matchesSearch(item, query)));
+	const groups = $derived(byCategory(shown, data.household?.categories));
 	const members = $derived(data.household?.members ?? []);
 
 	// Kto polozku pridal, sa berie z domacnosti v layoute - poradie clena drzi jeho farbu.
@@ -142,6 +148,30 @@
 			</button>
 		</div>
 
+		<!-- Hladanie ma zmysel az pri zozname, v ktorom sa da stratit; kratky sa prejde ocami. -->
+		{#if items.length > 5}
+			<label class="relative flex items-center">
+				<SearchIcon class="pointer-events-none absolute left-3 size-4 text-tn-meta" />
+				<input
+					bind:value={query}
+					type="search"
+					placeholder={m.list_search_placeholder()}
+					aria-label={m.list_search_label()}
+					class="h-11 w-full rounded-lg border border-input bg-card pr-10 pl-10 font-semibold outline-none focus-visible:border-tn-primary"
+				/>
+				{#if query}
+					<button
+						type="button"
+						onclick={() => (query = '')}
+						aria-label={m.list_search_clear()}
+						class="absolute right-1 inline-flex size-9 cursor-pointer items-center justify-center rounded-lg text-tn-meta transition hover:bg-muted"
+					>
+						<XIcon class="size-4" />
+					</button>
+				{/if}
+			</label>
+		{/if}
+
 		{#if groups.length}
 			{#each groups as group (group.code)}
 				<section class="flex flex-col gap-2" animate:flip={{ duration: ms(220) }}>
@@ -201,7 +231,9 @@
 			<section
 				class="rounded-2xl border border-tn-muted/40 bg-card px-6 py-12 text-center shadow-xs"
 			>
-				<p class="text-[15px] leading-relaxed text-muted-foreground">{m.list_empty()}</p>
+				<p class="text-[15px] leading-relaxed text-muted-foreground">
+					{query ? m.list_search_empty({ query }) : m.list_empty()}
+				</p>
 			</section>
 		{/if}
 	</div>

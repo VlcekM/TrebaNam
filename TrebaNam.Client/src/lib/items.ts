@@ -4,6 +4,26 @@ import { cachedItems, newID, patchItems, patchSuggestions, write } from '$lib/of
 import { userStore } from '$lib/stores/user';
 import type { Item, ItemSuggestion } from '$lib/types';
 
+/**
+ * Ci vec sedi na hladany text: bez diakritiky a velkych pismen, rovnako ako kluc na serveri,
+ * lebo na telefone sa "banany" pise rychlejsie nez "banány". Hlada sa v nazve aj v poznamke.
+ */
+export function matchesSearch(item: { name: string; note?: string }, query: string) {
+	const needle = fold(query);
+
+	if (!needle) return true;
+
+	return fold(item.name).includes(needle) || fold(item.note ?? '').includes(needle);
+}
+
+function fold(text: string) {
+	return text
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.toLowerCase()
+		.trim();
+}
+
 /** Rovnake hranice ako v ItemEntity - formular nema pustit dalej, nez API prijme. */
 export const ItemNameMaxLength = 120;
 
