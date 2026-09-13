@@ -83,3 +83,27 @@ export function rejectedCount(count: number) {
 			return m.offline_rejected_other({ count });
 	}
 }
+
+/** Kolko nakupov je v sucte - v mesacnom filtri nad minulymi nakupmi. */
+export function tripCount(count: number) {
+	switch (form(count)) {
+		case 'one':
+			return m.history_trip_count_one();
+		case 'few':
+			return m.history_trip_count_few({ count });
+		default:
+			return m.history_trip_count_other({ count });
+	}
+}
+
+/** Kolko nakupov v mesiaci nema sumu, takze v minuti chybaju. */
+export function withoutTotalCount(count: number) {
+	switch (form(count)) {
+		case 'one':
+			return m.spending_without_total_one();
+		case 'few':
+			return m.spending_without_total_few({ count });
+		default:
+			return m.spending_without_total_other({ count });
+	}
+}

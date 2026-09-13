@@ -71,6 +71,20 @@
 	--tn-member-a: #d08c2e;
 	--tn-member-b: #4e7a9b;
 
+	/*
+	  Farby grafov - osem pevnych odtienov pre skupiny na obrazovke minutia. Overene proti
+	  farbosleposti a kremovemu podkladu; poradie je pevne, skupina si farbu drzi podla svojho
+	  poradia v domacnosti, nie podla toho, kolko sa v nej minulo.
+	*/
+	--tn-viz-1: #2a78d6;
+	--tn-viz-2: #eb6834;
+	--tn-viz-3: #1baf7a;
+	--tn-viz-4: #eda100;
+	--tn-viz-5: #e87ba4;
+	--tn-viz-6: #008300;
+	--tn-viz-7: #4a3aa7;
+	--tn-viz-8: #e34948;
+
 	--tn-shadow-xs: 0 1px 2px rgba(80, 62, 30, 0.07);
 	--tn-shadow-float: 0 4px 18px rgba(80, 62, 30, 0.15);
 
@@ -108,6 +122,16 @@
 
 	--tn-meta: #97979a;
 	--tn-faint: #7e7e82;
+
+	/* Tie iste odtiene, doladene na tmavy podklad - nie automaticke otocenie. */
+	--tn-viz-1: #3987e5;
+	--tn-viz-2: #d95926;
+	--tn-viz-3: #199e70;
+	--tn-viz-4: #c98500;
+	--tn-viz-5: #d55181;
+	--tn-viz-6: #008300;
+	--tn-viz-7: #9085e9;
+	--tn-viz-8: #e66767;
 
 	--tn-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
 	--tn-shadow-float: 0 4px 18px rgba(0, 0, 0, 0.5);
@@ -159,6 +183,14 @@
 	--color-tn-faint: var(--tn-faint);
 	--color-tn-member-a: var(--tn-member-a);
 	--color-tn-member-b: var(--tn-member-b);
+	--color-tn-viz-1: var(--tn-viz-1);
+	--color-tn-viz-2: var(--tn-viz-2);
+	--color-tn-viz-3: var(--tn-viz-3);
+	--color-tn-viz-4: var(--tn-viz-4);
+	--color-tn-viz-5: var(--tn-viz-5);
+	--color-tn-viz-6: var(--tn-viz-6);
+	--color-tn-viz-7: var(--tn-viz-7);
+	--color-tn-viz-8: var(--tn-viz-8);
 }
 
 html,

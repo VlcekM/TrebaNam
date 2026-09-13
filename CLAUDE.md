@@ -62,8 +62,9 @@ tick, so a shop with no signal still starts.
 Every screen bounces to `/app/household` for anyone without a household.
 `/app/list/[[id]]` is one shopping list and `/app/shop/[[id]]` shop mode over that same list. The
 id is optional and no id means the first list, so `/app/list` stays a single address worth saving
-to a home screen while every list still has one of its own. `/app/history` is the past trips and
-`/app/household` both the household screen and the onboarding form.
+to a home screen while every list still has one of its own. `/app/history` is the past trips,
+`/app/household` both the household screen and the onboarding form, and `/app/spending` the money
+screen.
 Everything under `/app` shares one loader, `src/routes/app/+layout.ts`, which fetches the user,
 the household and the lists - the shell, the list switcher and the add dialog need them on every
 screen; pages read them off layout data rather than fetching again, and a write is followed by
@@ -204,6 +205,27 @@ A trip can be deleted (`DELETE /api/shopping-records/{id}`, rows go with it), al
 confirmation naming the date, because the button sits next to the total and the delete cannot be
 undone. Deleting a trip does not put its items back on the list - the trip was a copy of what was
 bought, not the items themselves.
+
+`/app/history` can be narrowed to one month: a chip switches the list between every trip and a
+month picker (`MonthPicker`, arrows either side of the month name), and a tinted strip above the
+cards sums what is shown - the totals that exist, how many trips there are and how many carry no
+total, because a sum that silently skips a receipt would read as less spent. The filter lives in
+the screen's state, not in the URL, so the home-screen shortcut still opens everything.
+
+## Spending
+
+`/app/spending` reads the same trips (`src/lib/spending.ts`) and shows one month at a time: the
+month's total, a donut of that total by group (`CategoryDonut`) and a bar per month for the twelve
+months up to it (`MonthBars`), where tapping a bar picks that month and the arrows step by one; the
+next-month arrow stops at the current month. A trip carries one total and no price per row, so the
+group split is an estimate: each trip's total is divided evenly across its items and every share is
+credited to its item's group (`spendByCategory`), and the screen says so under the chart. Trips
+without a total add nothing and are counted out loud instead. Months are keyed in the phone's local
+time (`monthOf`), because the trip belongs to the day it was walked, not to UTC.
+The donut's colours are the eight `--tn-viz-*` tokens in `src/app.css` (a colour-blind-safe set with
+its own dark-mode steps), assigned by the group's position in the household's order rather than by
+size, so a group keeps its colour from one month to the next; a ninth group and beyond is grey, and
+the legend under the chart carries every amount, so nothing rests on colour alone.
 
 In the interface a finished shopping is a **trip**, never a "shop" - a shop is a place, and this
 is the outing. The code still says `ShoppingRecord`, so the database and the endpoints keep their

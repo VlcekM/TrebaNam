@@ -6,7 +6,8 @@ export function navItems() {
 		{ href: '/app', label: m.app_nav_home() },
 		{ href: '/app/list', label: m.app_nav_list() },
 		{ href: '/app/history', label: m.app_nav_history() },
-		{ href: '/app/household', label: m.app_nav_household() }
+		{ href: '/app/household', label: m.app_nav_household() },
+		{ href: '/app/spending', label: m.app_nav_spending() }
 	];
 }
 
