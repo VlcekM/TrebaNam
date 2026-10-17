@@ -9,6 +9,7 @@ import {
 	write
 } from '$lib/offline/queue';
 import { userStore } from '$lib/stores/user';
+import type { ReceiptRow } from '$lib/receipts';
 import type { Item, ShoppingList, ShoppingRecord } from '$lib/types';
 
 /**
@@ -76,7 +77,21 @@ export function shoppingInProgress(lists: ShoppingList[]) {
  * nakup dostane meno uz v telefone, historia si ho zapise hned a na server odide, ked sa da.
  * Rovnake meno znamena, ze ani z dvakrat odoslaneho ukoncenia nebudu dva nakupy.
  */
-export function finishShopping(listID: string, totalCost?: number, extraItemIDs: string[] = []) {
+export interface FinishReceipt {
+	receiptID: string;
+	storeName?: string;
+	/** Riadky blocku, ku ktorym na zozname nic nebolo, a do nakupu patria. */
+	extra: ReceiptRow[];
+	/** Ktory riadok blocku je ktora odskrtnuta vec - server si to zapamata. */
+	pairings: { receiptName: string; itemID: string }[];
+}
+
+export function finishShopping(
+	listID: string,
+	totalCost?: number,
+	extraItemIDs: string[] = [],
+	receipt?: FinishReceipt
+) {
 	const id = newID();
 	const extra = new Set(extraItemIDs);
 	// Vec z tohto zoznamu alebo jedna z tych, ktore sa vzali z inych - to iste, co robi server.
@@ -86,7 +101,7 @@ export function finishShopping(listID: string, totalCost?: number, extraItemIDs:
 		{
 			method: 'POST',
 			path: '/api/shopping-records',
-			body: { id, listID, totalCost: totalCost ?? null, extraItemIDs }
+			body: { id, listID, totalCost: totalCost ?? null, extraItemIDs, receipt: receipt ?? null }
 		},
 		async () => {
 			const items = await cachedItems();
@@ -103,12 +118,22 @@ export function finishShopping(listID: string, totalCost?: number, extraItemIDs:
 				listName: list?.name,
 				listColor: list?.color,
 				totalCost,
-				items: bought.map((item) => ({
-					id: newID(),
-					name: item.name,
-					quantity: item.boughtQuantity ?? item.quantity,
-					category: item.category
-				}))
+				receiptID: receipt?.receiptID,
+				storeName: receipt?.storeName,
+				items: [
+					...bought.map((item) => ({
+						id: newID(),
+						name: item.name,
+						quantity: item.boughtQuantity ?? item.quantity,
+						category: item.category
+					})),
+					...(receipt?.extra ?? []).map((row) => ({
+						id: newID(),
+						name: row.name,
+						quantity: row.quantity,
+						category: row.category
+					}))
+				]
 			};
 
 			await patchRecords((records) => [record, ...records]);

@@ -4,6 +4,7 @@ using TrebaNam.API.Auth;
 using TrebaNam.API.Households;
 using TrebaNam.API.Items;
 using TrebaNam.API.ShoppingLists;
+using TrebaNam.API.Receipts;
 using TrebaNam.API.ShoppingRecords;
 
 namespace TrebaNam.API;
@@ -28,6 +29,8 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<ItemEntity> Items { get; set; }
 
     public DbSet<ItemFavouriteEntity> ItemFavourites { get; set; }
+
+    public DbSet<ReceiptAliasEntity> ReceiptAliases { get; set; }
 
     public DbSet<ShoppingRecordEntity> ShoppingRecords { get; set; }
 
@@ -87,6 +90,17 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
             .HasForeignKey(i => i.HouseholdID)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Jeden riadok blocku znamena v domacnosti jednu vec.
+        modelBuilder.Entity<ReceiptAliasEntity>()
+            .HasIndex(a => new { a.HouseholdID, a.ReceiptKey })
+            .IsUnique();
+
+        modelBuilder.Entity<ReceiptAliasEntity>()
+            .HasOne<HouseholdEntity>()
+            .WithMany()
+            .HasForeignKey(a => a.HouseholdID)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Hviezdicka plati pre domacnost a pre jednu vec v nej prave raz.
         modelBuilder.Entity<ItemFavouriteEntity>()
             .HasIndex(f => new { f.HouseholdID, f.NameKey })
@@ -100,6 +114,12 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
 
         modelBuilder.Entity<ShoppingRecordEntity>()
             .HasIndex(r => r.HouseholdID);
+
+        // Jeden blocek je jeden nakup - aj ked ho naskenuju obaja. Nakupy bez blocku maju null
+        // a tych moze byt kolko chce.
+        modelBuilder.Entity<ShoppingRecordEntity>()
+            .HasIndex(r => new { r.HouseholdID, r.ReceiptID })
+            .IsUnique();
 
         modelBuilder.Entity<ShoppingRecordEntity>()
             .HasOne<HouseholdEntity>()

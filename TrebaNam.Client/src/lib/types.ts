@@ -96,7 +96,39 @@ export interface ShoppingRecord {
 	listColor?: string;
 	/** Cena celeho nakupu v eurach; chyba, kym ju nikto nezadal. */
 	totalCost?: number;
+	/** Identifikator blocku z eKasy, ked bol nakup nacitany z blocku. */
+	receiptID?: string;
+	/** Obchod z blocku. */
+	storeName?: string;
 	items: ShoppingRecordItem[];
+}
+
+/** Riadok blocku z GET /api/receipts/{id}; rovnake veci uz su zlucene. */
+export interface ReceiptItem {
+	/** Nazov z blocku - podla neho si appka pamata, co z riadku domacnost spravila. */
+	receiptName: string;
+	/** Nazov, ako ho domacnost pise: zapamatany z minula, inak ten z blocku. */
+	name: string;
+	/** Nazov aj skupina su z toho, co domacnost s tymto riadkom urobila naposledy. */
+	remembered: boolean;
+	quantity: number;
+	/** Cena celeho riadku - len na rozpoznanie, neuklada sa. */
+	price: number;
+	category: string;
+	/** Zaloha za obal; v nahlade ide neoznacena. */
+	isDeposit: boolean;
+}
+
+/** Nahlad blocku z eKasy z GET /api/receipts/{id}. */
+export interface ReceiptPreview {
+	receiptID: string;
+	storeName?: string;
+	issuedAt?: string;
+	totalCost?: number;
+	items: ReceiptItem[];
+	/** Nakup, ktory domacnost z tohto blocku uz ma. */
+	importedRecordID?: string;
+	importedAt?: string;
 }
 
 /** Vec, ktoru domacnost uz kupovala, z GET /api/items/suggestions. */

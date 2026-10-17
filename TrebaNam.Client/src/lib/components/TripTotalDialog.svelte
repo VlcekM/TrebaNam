@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
+	import ScanLineIcon from '@lucide/svelte/icons/scan-line';
 	import { parseMoney } from '$lib/money';
 	import { m } from '$lib/paraglide/messages.js';
 	import { finishShopping, setTripTotal } from '$lib/shopping';
@@ -12,12 +13,15 @@
 		open = $bindable(false),
 		record,
 		listID,
-		extraItemIDs = []
+		extraItemIDs = [],
+		onscan
 	}: {
 		open?: boolean;
 		record?: ShoppingRecord;
 		listID?: string;
 		extraItemIDs?: string[];
+		/** Ukoncit nakup blockom namiesto rucne napisanej sumy; len pri ukonceni. */
+		onscan?: () => void;
 	} = $props();
 
 	let dialog = $state<HTMLDialogElement>();
@@ -105,6 +109,21 @@
 
 		{#if !record}
 			<p class="text-sm text-tn-meta">{m.trip_finish_hint()}</p>
+
+			<!-- Blocek prinesie sumu sam a k tomu aj to, co sa kupilo navyse. -->
+			{#if onscan}
+				<button
+					type="button"
+					onclick={() => {
+						open = false;
+						onscan();
+					}}
+					class="inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-lg bg-tn-tint px-4 font-bold text-tn-primary-strong transition hover:bg-muted"
+				>
+					<ScanLineIcon class="size-4" />
+					{m.receipt_finish_scan()}
+				</button>
+			{/if}
 		{/if}
 
 		<label class="flex flex-col gap-2">

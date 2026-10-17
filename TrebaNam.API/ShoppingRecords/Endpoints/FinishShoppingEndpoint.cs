@@ -1,6 +1,10 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using TrebaNam.API.Items;
 using TrebaNam.API.Realtime;
+using TrebaNam.API.Receipts;
+using TrebaNam.API.Receipts.Endpoints;
 using TrebaNam.API.ShoppingLists;
 
 namespace TrebaNam.API.ShoppingRecords.Endpoints;
@@ -26,6 +30,32 @@ public class FinishShoppingRequest
     /// tam mohol prave niekto iny nakupovat svoje a jeho kosik nie je nas.
     /// </summary>
     public List<Guid>? ExtraItemIDs { get; set; }
+
+    /// <summary>Blocek z pokladne, ked sa nakup ukoncuje jeho naskenovanim; inak null.</summary>
+    public FinishReceipt? Receipt { get; set; }
+}
+
+/// <summary>
+/// Blocek k ukoncovanemu nakupu: z ktoreho obchodu, co z neho este do nakupu patri, hoci to na
+/// zozname nebolo, a ktory riadok je ktora odskrtnuta vec - to si domacnost zapamata na dalsi raz.
+/// </summary>
+public class FinishReceipt
+{
+    public string ReceiptID { get; set; } = string.Empty;
+
+    public string? StoreName { get; set; }
+
+    /// <summary>Riadky blocku, ku ktorym na zozname nic nebolo, a clovek ich chce v nakupe.</summary>
+    public List<ImportReceiptRow> Extra { get; set; } = [];
+
+    public List<FinishPairing> Pairings { get; set; } = [];
+}
+
+public class FinishPairing
+{
+    public string ReceiptName { get; set; } = string.Empty;
+
+    public Guid ItemID { get; set; }
 }
 
 /// <summary>
@@ -75,6 +105,44 @@ public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory, Hous
             }
         }
 
+        string? receiptID = null;
+        var extraRows = new List<ShoppingRecordItemEntity>();
+        var codes = await ItemAccess.CategoryCodesAsync(list.HouseholdID, context, ct);
+
+        if (req.Receipt is { } receipt)
+        {
+            receiptID = receipt.ReceiptID.Trim().ToUpperInvariant();
+
+            if (!ReceiptText.IsReceiptID(receiptID))
+                ThrowError("This is not a receipt code.");
+
+            // Ten isty blocek uz je nakupom - naskenoval ho niekto druhy alebo sa nacital v historii.
+            var scanned = await context.ShoppingRecords
+                .Include(r => r.Items)
+                .FirstOrDefaultAsync(r => r.HouseholdID == list.HouseholdID && r.ReceiptID == receiptID, ct);
+
+            if (scanned is not null)
+            {
+                await Send.ResultAsync(TypedResults.Conflict(scanned.ToDTO()));
+                return;
+            }
+
+            extraRows = receipt.Extra
+                .Select(r => new ShoppingRecordItemEntity
+                {
+                    Name = ItemName.Display(r.Name ?? string.Empty),
+                    Quantity = string.IsNullOrWhiteSpace(r.Quantity) ? null : r.Quantity.Trim(),
+                    Category = ItemCategory.Normalize(r.Category, codes)
+                })
+                .Where(r => r.Name.Length > 0)
+                .ToList();
+
+            if (extraRows.Count > 300
+                || extraRows.Any(r => r.Name.Length > ItemEntity.NameMaxLength
+                                      || r.Quantity?.Length > ItemEntity.QuantityMaxLength))
+                ThrowError("A row is too long.");
+        }
+
         var extra = (req.ExtraItemIDs ?? []).Distinct().ToList();
 
         var bought = await context.Items
@@ -85,7 +153,7 @@ public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory, Hous
             .ToListAsync(ct);
 
         // Nakup bez jedinej odskrtnutej polozky by bol prazdny zaznam v historii.
-        if (bought.Count == 0)
+        if (bought.Count == 0 && extraRows.Count == 0)
         {
             await Send.ResultAsync(TypedResults.Conflict("Nothing was checked off."));
             return;
@@ -110,10 +178,30 @@ public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory, Hous
                     Quantity = i.BoughtQuantity ?? i.Quantity,
                     Category = i.Category
                 })
-                .ToList()
+                .Concat(extraRows)
+                .ToList(),
+            ReceiptID = receiptID,
+            StoreName = TrimStore(req.Receipt?.StoreName)
         };
 
         context.ShoppingRecords.Add(record);
+
+        if (req.Receipt is { } paired)
+        {
+            // Riadok blocku je ta odskrtnuta vec - nabuduce ju appka sparuje sama. Riadky navyse
+            // si pamataju to, ako ich clovek nechal.
+            var byID = bought.ToDictionary(i => i.ID);
+
+            await ReceiptAliases.RememberAsync(list.HouseholdID,
+                paired.Pairings
+                    .Where(p => byID.ContainsKey(p.ItemID))
+                    .Select(p => (p.ReceiptName, byID[p.ItemID].Name, byID[p.ItemID].Category))
+                    .Concat(paired.Extra
+                        .Where(r => !string.IsNullOrWhiteSpace(r.ReceiptName))
+                        .Select(r => (r.ReceiptName!, ItemName.Display(r.Name ?? string.Empty),
+                            ItemCategory.Normalize(r.Category, codes)))),
+                context, ct);
+        }
 
         // Cele polozky zo zoznamu odchadzaju, ciastocne v nom ostavaju - zvysok stale treba.
         // Poznamka o odnesenej casti sa maze, uz je zapisana v zazname.
@@ -126,11 +214,30 @@ public class FinishShoppingEndpoint(IDbContextFactory<DataContext> factory, Hous
         list.ShoppingStartedAt = null;
         list.ShoppingStartedByUserID = null;
 
-        await context.SaveChangesAsync(ct);
+        try
+        {
+            await context.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException e) when (receiptID is not null
+                                           && e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            // Ten isty blocek naskenoval v tej istej chvili niekto druhy.
+            await Send.ResultAsync(TypedResults.Conflict());
+            return;
+        }
 
         // Zoznam sa tym vyprazdnil a v historii pribudol nakup - druha strana ma co menit na oboch.
         await notifier.ChangedAsync(record.HouseholdID, ChangeTopic.Trips, ct);
 
         await Send.OkAsync(record.ToDTO(), ct);
+    }
+
+    private static string? TrimStore(string? store)
+    {
+        var name = store?.Trim();
+
+        return string.IsNullOrEmpty(name)
+            ? null
+            : name[..Math.Min(name.Length, ShoppingRecordEntity.StoreNameMaxLength)];
     }
 }

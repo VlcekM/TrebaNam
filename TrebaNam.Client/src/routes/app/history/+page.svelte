@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { categoryLabel } from '$lib/categories';
+	import ReceiptTextIcon from '@lucide/svelte/icons/receipt-text';
+	import ScanLineIcon from '@lucide/svelte/icons/scan-line';
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
+	import ReceiptDialog from '$lib/components/ReceiptDialog.svelte';
 	import DeleteTripDialog from '$lib/components/DeleteTripDialog.svelte';
 	import MemberAvatar from '$lib/components/MemberAvatar.svelte';
 	import TripTotalDialog from '$lib/components/TripTotalDialog.svelte';
@@ -36,6 +39,8 @@
 		totalOpen = true;
 	}
 
+	let receiptOpen = $state(false);
+
 	let deleteOf = $state<ShoppingRecord | undefined>();
 	let deleteOpen = $state(false);
 
@@ -59,11 +64,23 @@
 	class="flex flex-1 flex-col items-center px-4 pt-6 pb-12 sm:pt-8 sm:pb-16 lg:items-start lg:px-7 lg:py-6"
 >
 	<div class="flex w-full max-w-2xl flex-col gap-4 lg:max-w-3xl">
-		<div class="flex flex-col gap-1 px-1.5">
-			<h1 class="text-[30px] leading-tight font-bold tracking-tight lg:text-[24px]">
-				{m.history_title()}
-			</h1>
-			<p class="text-sm text-tn-meta">{data.household?.name}</p>
+		<div class="flex items-center gap-3 px-1.5">
+			<div class="flex min-w-0 flex-1 flex-col gap-1">
+				<h1 class="text-[30px] leading-tight font-bold tracking-tight lg:text-[24px]">
+					{m.history_title()}
+				</h1>
+				<p class="text-sm text-tn-meta">{data.household?.name}</p>
+			</div>
+
+			<!-- Nakup z blocku: QR kod zo slovenskej pokladne prinesie cely nakup naraz. -->
+			<button
+				type="button"
+				onclick={() => (receiptOpen = true)}
+				class="inline-flex h-11 flex-none cursor-pointer items-center gap-2 rounded-lg bg-tn-primary px-4 font-bold text-primary-foreground transition hover:bg-tn-primary-hover"
+			>
+				<ScanLineIcon class="size-4" />
+				{m.receipt_scan()}
+			</button>
 		</div>
 
 		{#if data.records.length > 0}
@@ -140,6 +157,13 @@
 							<span class="hidden sm:inline">{date.long}</span>
 						</h2>
 						<p class="text-[13px] text-tn-meta">
+							<!-- Nakup z blocku nesie obchod; text je z blocku, neprekladame ho. -->
+							{#if record.receiptID}
+								<ReceiptTextIcon
+									class="mr-0.5 inline size-3.5 align-[-2px]"
+									aria-label={m.receipt_from()}
+								/>{#if record.storeName}<span>{record.storeName}</span> ·{/if}
+							{/if}
 							<!-- Z ktoreho zoznamu sa nakupovalo, tak ako sa vtedy volal - je to odpis. -->
 							{#if record.listName}
 								<span
@@ -208,3 +232,4 @@
 
 <TripTotalDialog bind:open={totalOpen} record={totalOf} />
 <DeleteTripDialog bind:open={deleteOpen} record={deleteOf} />
+<ReceiptDialog bind:open={receiptOpen} lists={data.lists} {categories} />

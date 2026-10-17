@@ -12,6 +12,7 @@
 	import AmountsDialog from '$lib/components/AmountsDialog.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import ItemDialog from '$lib/components/ItemDialog.svelte';
+	import ReceiptFinishDialog from '$lib/components/ReceiptFinishDialog.svelte';
 	import TripTotalDialog from '$lib/components/TripTotalDialog.svelte';
 	import { matchesSearch, setItemChecked } from '$lib/items';
 	import { listDot } from '$lib/lists';
@@ -34,6 +35,8 @@
 	let failed = $state(false);
 	// Nakup sa ukoncuje v dialogu, lebo sa pri tom zapisuje aj to, kolko cely stal.
 	let finishOpen = $state(false);
+	// Ukoncenie blockom z pokladne: riadky blocku sa sparuju s tym, co je v kosiku.
+	let receiptOpen = $state(false);
 
 	// Mnozstva sa zadavaju v dialogu, nie klepnutim - su to texty, nie prepinace.
 	let partialOf = $state<Item | undefined>();
@@ -458,5 +461,12 @@
 <TripTotalDialog
 	bind:open={finishOpen}
 	listID={list.id}
+	extraItemIDs={taken.filter(isChecked).map((item) => item.id)}
+	onscan={() => (receiptOpen = true)}
+/>
+<ReceiptFinishDialog
+	bind:open={receiptOpen}
+	listID={list.id}
+	bought={[...inCart, ...partial]}
 	extraItemIDs={taken.filter(isChecked).map((item) => item.id)}
 />

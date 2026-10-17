@@ -17,6 +17,11 @@ public class ShoppingRecordDTO
     /// <summary>Cena celeho nakupu v eurach; null, ked ju nikto nezadal.</summary>
     public decimal? TotalCost { get; set; }
 
+    /// <summary>Identifikator blocku z eKasy, ked bol nakup nacitany z blocku.</summary>
+    public string? ReceiptID { get; set; }
+
+    public string? StoreName { get; set; }
+
     public List<ShoppingRecordItemDTO> Items { get; set; } = [];
 }
 
@@ -41,6 +46,8 @@ public static class ShoppingRecordMapping
         ListName = record.ListName,
         ListColor = record.ListColor,
         TotalCost = record.TotalCost,
+        ReceiptID = record.ReceiptID,
+        StoreName = record.StoreName,
         Items = record.Items
             .Select(i => new ShoppingRecordItemDTO
             {

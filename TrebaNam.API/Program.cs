@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using TrebaNam.API;
 using TrebaNam.API.Auth;
 using TrebaNam.API.Realtime;
+using TrebaNam.API.Receipts;
 using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -120,6 +121,24 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<HouseholdNotifier>();
 
 builder.Services.AddSingleton<AdminEmails>();
+
+// 5c. eKasa - nahlad blocku z QR kodu. Ich firewall odmieta poziadavky bez User-Agenta.
+builder.Services.AddHttpClient<EKasaClient>(c =>
+{
+    c.BaseAddress = new Uri(EKasaClient.BaseAddress);
+    c.Timeout = TimeSpan.FromSeconds(10);
+    c.DefaultRequestHeaders.UserAgent.ParseAdd("TrebaNam/1.0 (+https://trebanam.martinvlcek.sk)");
+});
+
+// 5d. OpenRouter - parovanie blocku so zoznamom modelom. Kluc v OpenRouter:ApiKey (user-secrets
+//     v developmente, premenna OpenRouter__ApiKey v produkcii); bezplatne modely byvaju pomale.
+builder.Services.AddHttpClient<OpenRouterClient>(c =>
+{
+    c.BaseAddress = new Uri(OpenRouterClient.BaseAddress);
+    c.Timeout = TimeSpan.FromSeconds(60);
+    c.DefaultRequestHeaders.Add("HTTP-Referer", "https://trebanam.martinvlcek.sk");
+    c.DefaultRequestHeaders.Add("X-Title", "TrebaNam");
+});
 
 var app = builder.Build();
 

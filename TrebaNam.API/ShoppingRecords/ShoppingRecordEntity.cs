@@ -36,7 +36,22 @@ public class ShoppingRecordEntity
     [Precision(CostPrecision, CostScale)]
     public decimal? TotalCost { get; set; }
 
+    /// <summary>
+    /// Identifikator blocku z eKasy (O-...), ked nakup vznikol naskenovanim. Ten isty blocek
+    /// sa v jednej domacnosti nezapise dvakrat - podla neho sa to pozna.
+    /// </summary>
+    [MaxLength(ReceiptIDMaxLength)]
+    public string? ReceiptID { get; set; }
+
+    /// <summary>Obchod z blocku, tak ako ho clovek pri nacitani nechal alebo prepisal.</summary>
+    [MaxLength(StoreNameMaxLength)]
+    public string? StoreName { get; set; }
+
     public List<ShoppingRecordItemEntity> Items { get; set; } = [];
+
+    public const int ReceiptIDMaxLength = 40;
+
+    public const int StoreNameMaxLength = 80;
 
     public const int CostPrecision = 10;
 

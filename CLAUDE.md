@@ -236,6 +236,61 @@ In the interface a finished shopping is a **trip**, never a "shop" - a shop is a
 is the outing. The code still says `ShoppingRecord`, so the database and the endpoints keep their
 names; only the copy in `messages/en.json` carries the word.
 
+## Receipts
+
+A trip can also come from a Slovak till receipt: its QR code holds the eKasa receipt id
+(`O-` and 32 hex digits), and the Financial Administration's public lookup returns the shop, the
+time, the total and every line. "Scan a receipt" on `/app/history` opens `ReceiptDialog`, which
+reads the code with the camera (`BarcodeDetector` where the browser has one, `jsqr` loaded on demand
+elsewhere, so Safari works too), from a photo, or typed by hand. The lookup goes through the API
+(`GET /api/receipts/{id}`, `EKasaClient`), never from the browser: eKasa does not allow other
+origins and its firewall turns away requests without a User-Agent. Only ids shaped like a receipt
+are sent on, so the endpoint is no open relay. Receipts printed while the till was offline carry no
+such id and cannot be looked up.
+
+The preview is a suggestion, not the trip. Only sold lines (`itemType` K) come through, lines with
+the same name are merged (tills ring three cans as three lines), all-caps till names are lowered,
+deposits (`záloha`) start unticked, and the group is the one the household last gave a thing of
+that name - unless the household already said what that line is (see pairings below), in which
+case its name and group come prefilled. In the review people untick lines, rename things the way their list says them - the
+names feed the add dialog's suggestions later - and pick the group and, with several lists, the
+list. The line prices are shown to recognise the line and never stored: a trip still has one total,
+the receipt's. `POST /api/receipts/{id}/import` writes it as a trip dated by the receipt, not by
+the scan, so it lands in the right month; the record keeps `ReceiptID` and `StoreName`, and history
+shows the shop beside a receipt icon. One receipt is one trip per household (unique
+`HouseholdID, ReceiptID`): the same request id answers with the trip it already wrote, a second scan
+gets 409 with that trip, and the preview already says so. Importing never touches the lists - what
+is still on one after the shop is for a person to tick, not for a guess between "MON.ZERO 0,5l"
+and "Monster".
+
+A trip can also be finished with its receipt: the finish dialog in shop mode offers "Scan the
+receipt instead", which opens `ReceiptFinishDialog` (the scanner is `ReceiptScanner`, shared with
+the history import). After the scan comes pairing: every receipt line gets a select of what is in
+the cart (checked and partly bought, including things pulled from other lists). A line paired with
+an item is that item; the trip keeps the list's name for it, not the till's. A line with no item
+was bought anyway and goes into the trip as an extra row unless unticked (deposits start unticked).
+Checked items with no line still go in - they may have come from another till. The trip's total is
+the receipt's. It all goes through the ordinary finish (`POST /api/shopping-records` with a
+`receipt`: id, shop, extra rows, pairings), so it queues offline like any finish and keeps the
+one-receipt-one-trip rule.
+
+Pairings are remembered per household (`ReceiptAliasEntity`: the key of the till line, the name and
+the group the household uses for it), written by both the finish (each pair, and each extra row as
+it was left) and the history import (each row as renamed). The preview returns them as `name`,
+`category` and `remembered`, beside the untouched `receiptName`; pairing matches a line to a cart
+item whose name has the same key, so a remembered pair comes in already made. A newer decision
+overwrites the older one.
+
+"Pair the rest with AI" sends only the unpaired lines and the cart's names to
+`POST /api/receipts/pair`, which asks OpenRouter (`OpenRouterClient`, model `OpenRouter:Model`,
+default `openrouter/free`, so any free model). The answer is index pairs, checked against the
+lists sent; models that ignore the JSON schema are parsed leniently. The suggestions only fill
+lines still unpaired when they arrive, show as "suggested by AI", and are not remembered until the
+trip is finished with them. The key is `OpenRouter:ApiKey` - user-secrets in development, the
+`OpenRouter__ApiKey` variable in production; without it the endpoint answers 503 and the button
+says AI pairing is not set up. It is behind sign-in and a household so it is not a free relay to
+the model.
+
 ## Households
 
 One person belongs to at most one household (`UserEntity.HouseholdID`, nullable). Everything

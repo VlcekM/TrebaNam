@@ -304,6 +304,49 @@ namespace TrebaNam.API.Migrations
                     b.ToTable("item_favourites", (string)null);
                 });
 
+            modelBuilder.Entity("TrebaNam.API.Receipts.ReceiptAliasEntity", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("category");
+
+                    b.Property<Guid>("HouseholdID")
+                        .HasColumnType("uuid")
+                        .HasColumnName("household_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("ReceiptKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("receipt_key");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("ID")
+                        .HasName("pk_receipt_aliases");
+
+                    b.HasIndex("HouseholdID", "ReceiptKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_receipt_aliases_household_id_receipt_key");
+
+                    b.ToTable("receipt_aliases", (string)null);
+                });
+
             modelBuilder.Entity("TrebaNam.API.ShoppingLists.ShoppingListEntity", b =>
                 {
                     b.Property<Guid>("ID")
@@ -391,6 +434,16 @@ namespace TrebaNam.API.Migrations
                         .HasColumnType("character varying(60)")
                         .HasColumnName("list_name");
 
+                    b.Property<string>("ReceiptID")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("receipt_id");
+
+                    b.Property<string>("StoreName")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("store_name");
+
                     b.Property<decimal?>("TotalCost")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
@@ -401,6 +454,10 @@ namespace TrebaNam.API.Migrations
 
                     b.HasIndex("HouseholdID")
                         .HasDatabaseName("ix_shopping_records_household_id");
+
+                    b.HasIndex("HouseholdID", "ReceiptID")
+                        .IsUnique()
+                        .HasDatabaseName("ix_shopping_records_household_id_receipt_id");
 
                     b.ToTable("shopping_records", (string)null);
                 });
@@ -486,6 +543,16 @@ namespace TrebaNam.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_item_favourites_households_household_id");
+                });
+
+            modelBuilder.Entity("TrebaNam.API.Receipts.ReceiptAliasEntity", b =>
+                {
+                    b.HasOne("TrebaNam.API.Households.HouseholdEntity", null)
+                        .WithMany()
+                        .HasForeignKey("HouseholdID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_receipt_aliases_households_household_id");
                 });
 
             modelBuilder.Entity("TrebaNam.API.ShoppingLists.ShoppingListEntity", b =>
