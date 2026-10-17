@@ -192,12 +192,16 @@
 	}
 </script>
 
+<!--
+	Na telefone cez celu obrazovku: riadkov blocku byva aj dvadsat a v okne s okrajmi by sa
+	tlacili pod hlavickou. Hlavicka a tlacidla stoja, posuva sa len zoznam medzi nimi.
+-->
 <dialog
 	bind:this={dialog}
 	onclose={() => (open = false)}
 	onmousedown={backdropDown}
 	onclick={backdropClick}
-	class="m-auto max-h-[calc(100dvh-2rem)] w-[min(36rem,calc(100vw-2rem))] rounded-2xl border border-tn-muted/40 bg-card p-0 text-foreground shadow-float"
+	class="m-0 h-dvh max-h-none w-screen max-w-none bg-card p-0 text-foreground sm:m-auto sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:w-[min(36rem,calc(100vw-2rem))] sm:rounded-2xl sm:border sm:border-tn-muted/40 sm:shadow-float"
 >
 	{#if !preview}
 		{#if open}
@@ -209,15 +213,17 @@
 			/>
 		{/if}
 	{:else}
-		<div class="flex max-h-[calc(100dvh-2rem)] flex-col">
-			<div class="flex flex-col gap-3 border-b border-tn-muted/40 p-6 pb-4">
-				<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-					<h2 class="text-[17px] font-bold">{m.receipt_pair_title()}</h2>
-					<span class="text-[13px] text-tn-meta">
-						{#if preview.totalCost != null}
-							<span class="font-bold text-tn-primary-strong">{money(preview.totalCost)}</span>
-						{/if}
-					</span>
+		<div class="flex h-full flex-col sm:max-h-[calc(100dvh-2rem)]">
+			<div
+				class="flex flex-col gap-3 border-b border-tn-muted/40 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3 sm:p-6 sm:pb-4"
+			>
+				<div class="flex items-baseline gap-3">
+					<h2 class="min-w-0 flex-1 text-[17px] font-bold">{m.receipt_pair_title()}</h2>
+					{#if preview.totalCost != null}
+						<span class="flex-none text-[17px] font-bold text-tn-primary-strong">
+							{money(preview.totalCost)}
+						</span>
+					{/if}
 				</div>
 
 				{#if already}
@@ -226,26 +232,26 @@
 					</p>
 				{/if}
 
-				<label class="flex flex-col gap-2">
-					<span class="text-[11px] font-bold tracking-[0.08em] text-tn-meta uppercase">
+				<label class="flex items-center gap-3">
+					<span class="flex-none text-[11px] font-bold tracking-[0.08em] text-tn-meta uppercase">
 						{m.receipt_store_label()}
 					</span>
 					<input
 						bind:value={storeName}
 						maxlength={80}
-						class="h-11 w-full rounded-lg border border-input bg-background px-3 font-semibold outline-none focus-visible:border-tn-primary"
+						class="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 font-semibold outline-none focus-visible:border-tn-primary"
 					/>
 				</label>
 
-				<p class="text-[13px] text-tn-meta">{m.receipt_pair_hint()}</p>
+				<p class="text-[13px] leading-snug text-tn-meta">{m.receipt_pair_hint()}</p>
 
 				{#if unpaired.length > 0 && bought.length > 0}
-					<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+					<div class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
 						<button
 							type="button"
 							onclick={askAI}
 							disabled={asking}
-							class="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-tn-tint px-3 text-[13.5px] font-bold text-tn-primary-strong transition hover:bg-muted disabled:cursor-wait disabled:opacity-60"
+							class="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-tn-tint px-3 text-[13.5px] font-bold text-tn-primary-strong transition hover:bg-muted disabled:cursor-wait disabled:opacity-60"
 						>
 							<SparklesIcon class="size-4" />
 							{asking ? m.receipt_ai_pending() : m.receipt_ai_pair()}
@@ -257,34 +263,45 @@
 				{/if}
 			</div>
 
-			<ul class="flex min-h-0 flex-1 flex-col overflow-y-auto px-6">
+			<ul class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 sm:px-6">
 				{#each lines as line, index (index)}
+					{@const quantity = receiptQuantity(line.quantity)}
+					{@const badge = !line.itemID
+						? undefined
+						: line.source === 'remembered'
+							? m.receipt_pair_remembered()
+							: line.source === 'ai'
+								? m.receipt_pair_ai()
+								: undefined}
+					<!-- Dva riadky aj na uzkom displeji: co je na blocku, a pod tym, co to je u nas. -->
 					<li
-						class="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-tn-muted/40 py-3 first:border-t-0 {line.itemID ||
+						class="flex flex-col gap-2 border-t border-tn-muted/40 py-3 first:border-t-0 sm:flex-row sm:items-center sm:gap-3 {line.itemID ||
 						line.include
 							? ''
 							: 'opacity-55'}"
 					>
-						<div class="flex min-w-0 flex-1 basis-44 flex-col">
-							<span class="truncate font-bold">{line.receiptName}</span>
-							<span class="text-[13px] text-tn-faint">
-								{[receiptQuantity(line.quantity), money(line.price)].filter(Boolean).join(' · ')}
-								{#if line.itemID && line.source === 'remembered'}
-									· {m.receipt_pair_remembered()}
-								{:else if line.itemID && line.source === 'ai'}
-									· {m.receipt_pair_ai()}
-								{/if}
-							</span>
+						<div class="flex min-w-0 flex-1 flex-col">
+							<div class="flex items-baseline gap-2">
+								<span class="min-w-0 flex-1 truncate font-bold">{line.receiptName}</span>
+								<span class="flex-none text-[13px] text-tn-faint">{money(line.price)}</span>
+							</div>
+							{#if quantity || badge}
+								<span class="text-[12.5px] text-tn-faint">
+									{quantity}{quantity && badge ? ' · ' : ''}{#if badge}<span
+											class="font-semibold text-tn-primary-strong">{badge}</span
+										>{/if}
+								</span>
+							{/if}
 						</div>
 
-						<div class="flex flex-1 basis-full items-center gap-2 sm:flex-none sm:basis-56">
+						<div class="flex items-center gap-2 sm:w-64 sm:flex-none">
 							<select
 								bind:value={line.itemID}
 								onchange={() => (line.source = undefined)}
 								aria-label={m.receipt_pair_with({ name: line.receiptName })}
-								class="h-10 min-w-0 flex-1 cursor-pointer rounded-lg border bg-background px-2 text-sm font-semibold outline-none focus-visible:border-tn-primary {line.itemID
+								class="h-11 min-w-0 flex-1 cursor-pointer rounded-lg border bg-background px-2 text-sm font-semibold outline-none focus-visible:border-tn-primary sm:h-10 {line.itemID
 									? 'border-tn-primary/60'
-									: 'border-input'}"
+									: 'border-input text-tn-meta'}"
 							>
 								<option value="">{m.receipt_pair_none()}</option>
 								{#each bought as item (item.id)}
@@ -295,7 +312,7 @@
 							<!-- Co na zozname nebolo, sa kupilo aj tak - ide do nakupu, kym sa neodskrtne. -->
 							{#if !line.itemID}
 								<label
-									class="flex flex-none cursor-pointer items-center gap-1.5 text-[13px] text-tn-meta"
+									class="flex h-11 flex-none cursor-pointer items-center gap-1.5 rounded-lg px-2 text-[13px] font-semibold text-tn-meta hover:bg-muted sm:h-10"
 								>
 									<input
 										type="checkbox"
@@ -310,9 +327,11 @@
 				{/each}
 			</ul>
 
-			<div class="flex flex-col gap-3 border-t border-tn-muted/40 p-6 pt-4">
+			<div
+				class="flex flex-col gap-3 border-t border-tn-muted/40 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6 sm:pt-4"
+			>
 				{#if missing.length > 0}
-					<p class="text-[13px] text-tn-meta">
+					<p class="text-[13px] leading-snug text-tn-meta">
 						{m.receipt_pair_missing({ names: missing.map((item) => item.name).join(', ') })}
 					</p>
 				{/if}
@@ -321,11 +340,11 @@
 					<p class="text-sm font-semibold text-destructive">{m.error_generic()}</p>
 				{/if}
 
-				<div class="flex flex-wrap items-center gap-2">
+				<div class="flex items-center gap-2">
 					<button
 						type="button"
 						onclick={() => (open = false)}
-						class="ml-auto inline-flex h-11 cursor-pointer items-center rounded-lg px-4 font-bold text-tn-meta transition hover:bg-muted"
+						class="inline-flex h-12 cursor-pointer items-center justify-center rounded-lg px-4 font-bold text-tn-meta transition hover:bg-muted sm:ml-auto sm:h-11"
 					>
 						{m.item_cancel()}
 					</button>
@@ -334,7 +353,7 @@
 						type="button"
 						onclick={finish}
 						disabled={pending || !!already}
-						class="inline-flex h-11 cursor-pointer items-center rounded-lg bg-tn-primary px-5 font-bold text-primary-foreground transition hover:bg-tn-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+						class="inline-flex h-12 flex-1 cursor-pointer items-center justify-center rounded-lg bg-tn-primary px-5 font-bold text-primary-foreground transition hover:bg-tn-primary-hover disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:flex-none"
 					>
 						{pending ? m.shop_finish_pending() : m.shop_finish()}
 					</button>

@@ -126,7 +126,7 @@
 	onclose={() => (open = false)}
 	onmousedown={backdropDown}
 	onclick={backdropClick}
-	class="m-auto max-h-[calc(100dvh-2rem)] w-[min(36rem,calc(100vw-2rem))] rounded-2xl border border-tn-muted/40 bg-card p-0 text-foreground shadow-float"
+	class="m-0 h-dvh max-h-none w-screen max-w-none bg-card p-0 text-foreground sm:m-auto sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:w-[min(36rem,calc(100vw-2rem))] sm:rounded-2xl sm:border sm:border-tn-muted/40 sm:shadow-float"
 >
 	{#if !preview}
 		{#if open}
@@ -138,8 +138,10 @@
 			/>
 		{/if}
 	{:else}
-		<div class="flex max-h-[calc(100dvh-2rem)] flex-col">
-			<div class="flex flex-col gap-4 border-b border-tn-muted/40 p-6 pb-4">
+		<div class="flex h-full flex-col sm:max-h-[calc(100dvh-2rem)]">
+			<div
+				class="flex flex-col gap-3 border-b border-tn-muted/40 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3 sm:gap-4 sm:p-6 sm:pb-4"
+			>
 				<div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
 					<h2 class="text-[17px] font-bold">{m.receipt_review_title()}</h2>
 					<span class="text-[13px] text-tn-meta">
@@ -189,7 +191,7 @@
 				<p class="text-[13px] text-tn-meta">{m.receipt_review_hint()}</p>
 			</div>
 
-			<ul class="flex min-h-0 flex-1 flex-col overflow-y-auto px-6">
+			<ul class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 sm:px-6">
 				{#each rows as row, index (index)}
 					<li
 						class="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-tn-muted/40 py-3 first:border-t-0 {row.include
@@ -239,16 +241,18 @@
 				{/each}
 			</ul>
 
-			<div class="flex flex-col gap-3 border-t border-tn-muted/40 p-6 pt-4">
+			<div
+				class="flex flex-col gap-3 border-t border-tn-muted/40 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6 sm:pt-4"
+			>
 				{#if failed}
 					<p class="text-sm font-semibold text-destructive">{m.error_generic()}</p>
 				{/if}
 
-				<div class="flex flex-wrap items-center gap-2">
+				<div class="flex items-center gap-2">
 					<button
 						type="button"
 						onclick={() => (open = false)}
-						class="ml-auto inline-flex h-11 cursor-pointer items-center rounded-lg px-4 font-bold text-tn-meta transition hover:bg-muted"
+						class="inline-flex h-12 cursor-pointer items-center justify-center rounded-lg px-4 font-bold text-tn-meta transition hover:bg-muted sm:ml-auto sm:h-11"
 					>
 						{m.item_cancel()}
 					</button>
@@ -257,7 +261,7 @@
 						type="button"
 						onclick={save}
 						disabled={importing || picked.length === 0 || !!already}
-						class="inline-flex h-11 cursor-pointer items-center rounded-lg bg-tn-primary px-5 font-bold text-primary-foreground transition hover:bg-tn-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+						class="inline-flex h-12 flex-1 cursor-pointer items-center justify-center rounded-lg bg-tn-primary px-5 font-bold text-primary-foreground transition hover:bg-tn-primary-hover disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:flex-none"
 					>
 						{importing ? m.receipt_importing() : m.receipt_import()}
 					</button>

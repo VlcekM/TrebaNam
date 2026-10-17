@@ -171,14 +171,17 @@
 	);
 </script>
 
-<div class="flex flex-col gap-4 p-6">
+<!-- Na telefone cez celu vysku dialogu: kamera dostane vsetko, co ostane po poliach. -->
+<div
+	class="flex h-full flex-col gap-4 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:h-auto sm:p-6"
+>
 	<div class="flex flex-col gap-1">
 		<h2 class="text-[17px] font-bold">{title}</h2>
 		<p class="text-sm text-tn-meta">{hint}</p>
 	</div>
 
 	<div
-		class="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl bg-muted sm:aspect-[4/3]"
+		class="relative flex min-h-48 w-full flex-1 items-center justify-center overflow-hidden rounded-xl bg-muted sm:aspect-[4/3] sm:flex-none"
 	>
 		<video
 			bind:this={video}
