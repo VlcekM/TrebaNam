@@ -3,9 +3,10 @@
 	import { ApiError } from '$lib/api';
 	import { categoryName } from '$lib/categories';
 	import ReceiptScanner from '$lib/components/ReceiptScanner.svelte';
+	import ReceiptTotalField from '$lib/components/ReceiptTotalField.svelte';
 	import { tripDate } from '$lib/dates';
 	import { ItemNameMaxLength, ItemQuantityMaxLength } from '$lib/items';
-	import { money } from '$lib/money';
+	import { money, parseMoney } from '$lib/money';
 	import { m } from '$lib/paraglide/messages.js';
 	import { importReceipt, receiptQuantity } from '$lib/receipts';
 	import type { Category, ReceiptPreview, ShoppingList, ShoppingRecord } from '$lib/types';
@@ -35,6 +36,8 @@
 	let preview = $state<ReceiptPreview | undefined>();
 	let rows = $state<Row[]>([]);
 	let storeName = $state('');
+	let amount = $state('');
+	let invalidTotal = $state(false);
 	let listID = $state('');
 	let importing = $state(false);
 	let failed = $state(false);
@@ -59,6 +62,8 @@
 		preview = undefined;
 		rows = [];
 		storeName = '';
+		amount = '';
+		invalidTotal = false;
 		listID = lists[0]?.id ?? '';
 		failed = false;
 		already = undefined;
@@ -67,6 +72,7 @@
 	function found(answer: ReceiptPreview) {
 		preview = answer;
 		storeName = answer.storeName ?? '';
+		amount = answer.totalCost != null ? answer.totalCost.toFixed(2) : '';
 		already = answer.importedAt;
 		rows = answer.items.map((item) => ({
 			include: !item.isDeposit,
@@ -81,6 +87,12 @@
 	async function save() {
 		if (!preview || importing || picked.length === 0) return;
 
+		const total = parseMoney(amount);
+
+		// Prazdne pole je nakup bez sumy; napisany nezmysel sa neulozi.
+		invalidTotal = amount.trim() !== '' && total === undefined;
+		if (invalidTotal) return;
+
 		importing = true;
 		failed = false;
 
@@ -94,7 +106,8 @@
 					category: row.category
 				})),
 				storeName.trim() || undefined,
-				lists.find((one) => one.id === listID)
+				lists.find((one) => one.id === listID),
+				total
 			);
 
 			await invalidateAll();
@@ -146,9 +159,6 @@
 					<h2 class="text-[17px] font-bold">{m.receipt_review_title()}</h2>
 					<span class="text-[13px] text-tn-meta">
 						{preview.issuedAt ? tripDate(preview.issuedAt).long : ''}
-						{#if preview.totalCost != null}
-							· <span class="font-bold text-tn-primary-strong">{money(preview.totalCost)}</span>
-						{/if}
 					</span>
 				</div>
 
@@ -187,6 +197,8 @@
 						</label>
 					{/if}
 				</div>
+
+				<ReceiptTotalField bind:amount invalid={invalidTotal} />
 
 				<p class="text-[13px] text-tn-meta">{m.receipt_review_hint()}</p>
 			</div>
