@@ -60,7 +60,8 @@ export function importReceipt(
 	preview: ReceiptPreview,
 	rows: ReceiptRow[],
 	storeName: string | undefined,
-	list: ShoppingList | undefined
+	list: ShoppingList | undefined,
+	totalCost: number | undefined
 ) {
 	const id = newID();
 	const completedAt = preview.issuedAt ?? new Date().toISOString();
@@ -74,7 +75,7 @@ export function importReceipt(
 				listID: list?.id ?? null,
 				storeName: storeName ?? null,
 				completedAt,
-				totalCost: preview.totalCost ?? null,
+				totalCost: totalCost ?? null,
 				items: rows
 			}
 		},
@@ -85,7 +86,7 @@ export function importReceipt(
 				completedAt,
 				listName: list?.name,
 				listColor: list?.color,
-				totalCost: preview.totalCost,
+				totalCost,
 				receiptID: preview.receiptID,
 				storeName,
 				items: rows.map((row) => ({ id: newID(), ...row }))

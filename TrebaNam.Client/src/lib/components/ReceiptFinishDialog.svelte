@@ -3,8 +3,9 @@
 	import SparklesIcon from '@lucide/svelte/icons/sparkles';
 	import { ApiError } from '$lib/api';
 	import ReceiptScanner from '$lib/components/ReceiptScanner.svelte';
+	import ReceiptTotalField from '$lib/components/ReceiptTotalField.svelte';
 	import { tripDate } from '$lib/dates';
-	import { money } from '$lib/money';
+	import { money, parseMoney } from '$lib/money';
 	import { m } from '$lib/paraglide/messages.js';
 	import { nameKey, pairWithAI, receiptQuantity } from '$lib/receipts';
 	import { finishShopping } from '$lib/shopping';
@@ -45,6 +46,8 @@
 	let preview = $state<ReceiptPreview | undefined>();
 	let lines = $state<Line[]>([]);
 	let storeName = $state('');
+	let amount = $state('');
+	let invalidTotal = $state(false);
 	let pending = $state(false);
 	let failed = $state(false);
 	let already = $state<string | undefined>();
@@ -64,6 +67,7 @@
 			lines = [];
 			failed = false;
 			already = undefined;
+			invalidTotal = false;
 			aiNote = undefined;
 			dialog.showModal();
 		} else if (!open && dialog.open) {
@@ -79,6 +83,7 @@
 		preview = answer;
 		already = answer.importedAt;
 		storeName = answer.storeName ?? '';
+		amount = answer.totalCost != null ? answer.totalCost.toFixed(2) : '';
 		lines = answer.items.map((item) => {
 			const match = bought.find((one) => nameKey(one.name) === nameKey(item.name));
 
@@ -140,11 +145,17 @@
 	async function finish() {
 		if (!preview || pending) return;
 
+		const total = parseMoney(amount);
+
+		// Prazdne pole je nakup bez sumy; napisany nezmysel sa neulozi.
+		invalidTotal = amount.trim() !== '' && total === undefined;
+		if (invalidTotal) return;
+
 		pending = true;
 		failed = false;
 
 		try {
-			await finishShopping(listID, preview.totalCost, extraItemIDs, {
+			await finishShopping(listID, total, extraItemIDs, {
 				receiptID: preview.receiptID,
 				storeName: storeName.trim() || undefined,
 				extra: lines
@@ -217,14 +228,7 @@
 			<div
 				class="flex flex-col gap-3 border-b border-tn-muted/40 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3 sm:p-6 sm:pb-4"
 			>
-				<div class="flex items-baseline gap-3">
-					<h2 class="min-w-0 flex-1 text-[17px] font-bold">{m.receipt_pair_title()}</h2>
-					{#if preview.totalCost != null}
-						<span class="flex-none text-[17px] font-bold text-tn-primary-strong">
-							{money(preview.totalCost)}
-						</span>
-					{/if}
-				</div>
+				<h2 class="text-[17px] font-bold">{m.receipt_pair_title()}</h2>
 
 				{#if already}
 					<p class="rounded-lg bg-tn-tint px-3 py-2 text-sm font-semibold">
@@ -242,6 +246,8 @@
 						class="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 font-semibold outline-none focus-visible:border-tn-primary"
 					/>
 				</label>
+
+				<ReceiptTotalField bind:amount invalid={invalidTotal} />
 
 				<p class="text-[13px] leading-snug text-tn-meta">{m.receipt_pair_hint()}</p>
 
