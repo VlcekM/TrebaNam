@@ -265,6 +265,7 @@
 	"receipt_pair_hint": "Pick which checked item each receipt line is. Lines with no item go into the trip as they are; untick the ones that should not. Pairs are remembered for next time.",
 	"receipt_pair_none": "Not on the list",
 	"receipt_pair_add": "Add",
+	"receipt_line_price": "Price of {name}",
 	"receipt_pair_with": "Item for {name}",
 	"receipt_pair_remembered": "remembered",
 	"receipt_pair_ai": "suggested by AI",

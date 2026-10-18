@@ -2,11 +2,12 @@
 	import { invalidateAll } from '$app/navigation';
 	import { ApiError } from '$lib/api';
 	import { categoryName } from '$lib/categories';
+	import ReceiptPriceField from '$lib/components/ReceiptPriceField.svelte';
 	import ReceiptScanner from '$lib/components/ReceiptScanner.svelte';
 	import ReceiptTotalField from '$lib/components/ReceiptTotalField.svelte';
 	import { tripDate } from '$lib/dates';
 	import { ItemNameMaxLength, ItemQuantityMaxLength } from '$lib/items';
-	import { money, parseMoney } from '$lib/money';
+	import { parseMoney } from '$lib/money';
 	import { m } from '$lib/paraglide/messages.js';
 	import { importReceipt, receiptQuantity } from '$lib/receipts';
 	import type { Category, ReceiptPreview, ShoppingList, ShoppingRecord } from '$lib/types';
@@ -121,6 +122,15 @@
 		} finally {
 			importing = false;
 		}
+	}
+
+	/** Oprava ceny riadku posunie sumu nakupu o ten isty rozdiel - kym je v poli cislo. */
+	function shiftTotal(delta: number) {
+		const total = parseMoney(amount);
+
+		if (total === undefined) return;
+
+		amount = Math.max(0, Math.round((total + delta) * 100) / 100).toFixed(2);
 	}
 
 	function backdropDown(event: MouseEvent) {
@@ -245,9 +255,7 @@
 								{/each}
 							</select>
 
-							<span class="w-16 flex-none text-right text-[13px] text-tn-faint">
-								{money(row.price)}
-							</span>
+							<ReceiptPriceField bind:price={row.price} name={row.name} onshift={shiftTotal} />
 						</div>
 					</li>
 				{/each}
