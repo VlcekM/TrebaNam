@@ -80,9 +80,7 @@ public class FindReceiptEndpoint(IDbContextFactory<DataContext> factory, EKasaCl
         foreach (var row in past)
             lastCategory.TryAdd(ItemName.Key(row.Name), row.Category);
 
-        var items = receipt.Items
-            // Vratenie, zlava ci oprava nie je vec, ktora sa odniesla domov.
-            .Where(i => i.ItemType == "K" && !string.IsNullOrWhiteSpace(i.Name))
+        var items = ReceiptText.SoldLines(receipt.Items)
             .Select(i => new { Name = ReceiptText.ItemName(i.Name), i.Quantity, i.Price })
             .GroupBy(i => ItemName.Key(i.Name))
             .Select(g =>

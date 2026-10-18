@@ -25,7 +25,13 @@ public class LoginEndpoint : Endpoint<LoginRequest>
     {
         await Send.ResultAsync(Results.Challenge(
             authenticationSchemes: [GoogleDefaults.AuthenticationScheme],
-            properties: new AuthenticationProperties { RedirectUri = SafeRedirect(req.ReturnUrl) }));
+            // IsPersistent prejde cez Google az do AppCookie: bez neho je to session cookie a telefon
+            // ju zahodi, kedykolvek zabije appku z plochy - typicky po redeployi, ked sa obnovi.
+            properties: new AuthenticationProperties
+            {
+                RedirectUri = SafeRedirect(req.ReturnUrl),
+                IsPersistent = true
+            }));
     }
 
     /// <summary>

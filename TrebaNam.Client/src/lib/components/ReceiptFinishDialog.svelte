@@ -2,10 +2,11 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import SparklesIcon from '@lucide/svelte/icons/sparkles';
 	import { ApiError } from '$lib/api';
+	import ReceiptPriceField from '$lib/components/ReceiptPriceField.svelte';
 	import ReceiptScanner from '$lib/components/ReceiptScanner.svelte';
 	import ReceiptTotalField from '$lib/components/ReceiptTotalField.svelte';
 	import { tripDate } from '$lib/dates';
-	import { money, parseMoney } from '$lib/money';
+	import { parseMoney } from '$lib/money';
 	import { m } from '$lib/paraglide/messages.js';
 	import { nameKey, pairWithAI, receiptQuantity } from '$lib/receipts';
 	import { finishShopping } from '$lib/shopping';
@@ -192,6 +193,15 @@
 		}
 	}
 
+	/** Oprava ceny riadku posunie sumu nakupu o ten isty rozdiel - kym je v poli cislo. */
+	function shiftTotal(delta: number) {
+		const total = parseMoney(amount);
+
+		if (total === undefined) return;
+
+		amount = Math.max(0, Math.round((total + delta) * 100) / 100).toFixed(2);
+	}
+
 	function backdropDown(event: MouseEvent) {
 		pressedBackdrop = event.target === dialog;
 	}
@@ -289,7 +299,6 @@
 						<div class="flex min-w-0 flex-1 flex-col">
 							<div class="flex items-baseline gap-2">
 								<span class="min-w-0 flex-1 truncate font-bold">{line.receiptName}</span>
-								<span class="flex-none text-[13px] text-tn-faint">{money(line.price)}</span>
 							</div>
 							{#if quantity || badge}
 								<span class="text-[12.5px] text-tn-faint">
@@ -300,7 +309,13 @@
 							{/if}
 						</div>
 
-						<div class="flex items-center gap-2 sm:w-64 sm:flex-none">
+						<div class="flex items-center gap-2 sm:w-80 sm:flex-none">
+							<ReceiptPriceField
+								bind:price={line.price}
+								name={line.receiptName}
+								onshift={shiftTotal}
+							/>
+
 							<select
 								bind:value={line.itemID}
 								onchange={() => (line.source = undefined)}

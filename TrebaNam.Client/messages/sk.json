@@ -265,6 +265,7 @@
 	"receipt_pair_hint": "Vyber, ktorá odškrtnutá vec je ktorý riadok bločku. Riadky bez veci idú do nákupu tak, ako sú; odškrtni tie, ktoré tam nepatria. Páry si appka zapamätá na budúce.",
 	"receipt_pair_none": "Nebolo na zozname",
 	"receipt_pair_add": "Pridať",
+	"receipt_line_price": "Cena za {name}",
 	"receipt_pair_with": "Vec pre {name}",
 	"receipt_pair_remembered": "zapamätané",
 	"receipt_pair_ai": "navrhla AI",

@@ -48,6 +48,32 @@ public static partial class ReceiptText
     /// </summary>
     public static bool IsDeposit(string name) => Items.ItemName.Key(name).Contains("zaloh");
 
+    /// <summary>
+    /// Predany tovar s uz odratanymi zlavami. Zlava (Z) je na blocku samostatny riadok hned pod
+    /// tym, na ktory sa vztahuje, takze sa pripise k poslednemu predanemu riadku - nahlad potom
+    /// ukaze 6,00 a nie 9,49. Vratenie ci oprava nie su veci, ktore sa odniesli domov.
+    /// </summary>
+    public static List<EKasaItem> SoldLines(IEnumerable<EKasaItem> lines)
+    {
+        var sold = new List<EKasaItem>();
+
+        foreach (var line in lines)
+        {
+            if (line.ItemType == "K" && !string.IsNullOrWhiteSpace(line.Name))
+            {
+                sold.Add(new EKasaItem { Name = line.Name, ItemType = line.ItemType, Quantity = line.Quantity, Price = line.Price });
+            }
+            else if (line.ItemType == "Z" && sold.Count > 0)
+            {
+                // Znamienko zlavy sa medzi pokladnami lisi; zlava vzdy znizuje.
+                var item = sold[^1];
+                item.Price = Math.Max(0, item.Price - Math.Abs(line.Price));
+            }
+        }
+
+        return sold;
+    }
+
     [GeneratedRegex(@"^O-[0-9A-F]{32}$")]
     private static partial Regex ReceiptIDPattern();
 
