@@ -80,6 +80,9 @@ builder.Services
     {
         o.LoginPath = "/api/auth/login";
         o.LogoutPath = "/api/auth/logout";
+        // Trvala cookie (IsPersistent pri prihlaseni) s klzavou platnostou: kto appku otvori
+        // aspon raz za dva mesiace, na Google uz nemusi.
+        o.ExpireTimeSpan = TimeSpan.FromDays(60);
         o.SlidingExpiration = true;
         o.Events = new CookieAuthenticationEvents
         {
