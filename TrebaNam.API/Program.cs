@@ -133,15 +133,9 @@ builder.Services.AddHttpClient<EKasaClient>(c =>
     c.DefaultRequestHeaders.UserAgent.ParseAdd("TrebaNam/1.0 (+https://trebanam.martinvlcek.sk)");
 });
 
-// 5d. OpenRouter - parovanie blocku so zoznamom modelom. Kluc v OpenRouter:ApiKey (user-secrets
-//     v developmente, premenna OpenRouter__ApiKey v produkcii); bezplatne modely byvaju pomale.
-builder.Services.AddHttpClient<OpenRouterClient>(c =>
-{
-    c.BaseAddress = new Uri(OpenRouterClient.BaseAddress);
-    c.Timeout = TimeSpan.FromSeconds(60);
-    c.DefaultRequestHeaders.Add("HTTP-Referer", "https://trebanam.martinvlcek.sk");
-    c.DefaultRequestHeaders.Add("X-Title", "TrebaNam");
-});
+// 5d. Claude - parovanie blocku so zoznamom modelom. Kluc v Anthropic:ApiKey (user-secrets
+//     v developmente, premenna Anthropic__ApiKey v produkcii).
+builder.Services.AddSingleton<ClaudeClient>();
 
 var app = builder.Build();
 

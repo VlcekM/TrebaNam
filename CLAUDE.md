@@ -282,12 +282,12 @@ item whose name has the same key, so a remembered pair comes in already made. A 
 overwrites the older one.
 
 "Pair the rest with AI" sends only the unpaired lines and the cart's names to
-`POST /api/receipts/pair`, which asks OpenRouter (`OpenRouterClient`, model `OpenRouter:Model`,
-default `openrouter/free`, so any free model). The answer is index pairs, checked against the
-lists sent; models that ignore the JSON schema are parsed leniently. The suggestions only fill
-lines still unpaired when they arrive, show as "suggested by AI", and are not remembered until the
-trip is finished with them. The key is `OpenRouter:ApiKey` - user-secrets in development, the
-`OpenRouter__ApiKey` variable in production; without it the endpoint answers 503 and the button
+`POST /api/receipts/pair`, which asks Claude through Anthropic's API (`ClaudeClient`, the
+`Anthropic` NuGet SDK, model `Anthropic:Model`, default `claude-haiku-5-5`, low effort). The answer
+is index pairs held to a JSON schema by structured outputs and checked against the lists sent. The
+suggestions only fill lines still unpaired when they arrive, show as "suggested by AI", and are not
+remembered until the trip is finished with them. The key is `Anthropic:ApiKey` - user-secrets in
+development, the `Anthropic__ApiKey` variable in production; without it the endpoint answers 503 and the button
 says AI pairing is not set up. It is behind sign-in and a household so it is not a free relay to
 the model.
 

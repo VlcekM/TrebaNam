@@ -32,7 +32,7 @@ public class ReceiptPairDTO
 /// zapamataju az s ukoncenim nakupu, ked ich clovek potvrdi. Pyta sa len prihlaseny clovek
 /// s domacnostou, aby to nebola verejna brana k modelu na nase naklady.
 /// </summary>
-public class PairReceiptEndpoint(IDbContextFactory<DataContext> factory, OpenRouterClient openRouter)
+public class PairReceiptEndpoint(IDbContextFactory<DataContext> factory, ClaudeClient claude)
     : Endpoint<PairReceiptRequest, PairReceiptResponse>
 {
     private const int MaxLines = 100;
@@ -68,7 +68,7 @@ public class PairReceiptEndpoint(IDbContextFactory<DataContext> factory, OpenRou
             }
         }
 
-        if (!openRouter.IsConfigured)
+        if (!claude.IsConfigured)
         {
             await Send.ResultAsync(TypedResults.StatusCode(StatusCodes.Status503ServiceUnavailable));
             return;
@@ -78,7 +78,7 @@ public class PairReceiptEndpoint(IDbContextFactory<DataContext> factory, OpenRou
 
         try
         {
-            pairs = await openRouter.PairAsync(req.Lines, req.Items, ct);
+            pairs = await claude.PairAsync(req.Lines, req.Items, ct);
         }
         catch (Exception e) when (e is HttpRequestException or TaskCanceledException && !ct.IsCancellationRequested)
         {

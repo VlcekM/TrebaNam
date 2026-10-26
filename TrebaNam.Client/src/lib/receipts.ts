@@ -104,7 +104,7 @@ export function importReceipt(
 
 /**
  * Necha model navrhnut, ktory riadok blocku je ktora vec z nakupu. Vracia dvojice indexov do
- * poslanych poli. 503 znamena, ze na serveri nie je kluc k OpenRouteru, 502, ze model neodpovedal.
+ * poslanych poli. 503 znamena, ze na serveri nie je kluc k API Anthropicu, 502, ze model neodpovedal.
  */
 export async function pairWithAI(lines: string[], items: string[]) {
 	const answer = await api<{ pairs: { line: number; item: number }[] }>('/api/receipts/pair', {
