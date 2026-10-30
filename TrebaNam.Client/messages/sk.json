@@ -270,9 +270,7 @@
 	"receipt_pair_remembered": "zapamätané",
 	"receipt_pair_ai": "navrhla AI",
 	"receipt_pair_missing": "Na bločku nie je, v nákupe ostáva: {names}",
-	"receipt_ai_pair": "Spárovať zvyšok cez AI",
-	"receipt_ai_pending": "Pýtam sa AI...",
-	"receipt_ai_nothing": "AI už nič ďalšie nespárovala.",
+	"receipt_ai_pending": "Párujem cez AI...",
 	"receipt_ai_off": "Párovanie cez AI nie je na serveri nastavené.",
-	"receipt_ai_failed": "AI neodpovedala. Skús znova alebo spáruj ručne."
+	"receipt_ai_failed": "AI neodpovedala - spáruj ručne."
 }

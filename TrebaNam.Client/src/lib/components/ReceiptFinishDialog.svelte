@@ -8,7 +8,7 @@
 	import { tripDate } from '$lib/dates';
 	import { parseMoney } from '$lib/money';
 	import { m } from '$lib/paraglide/messages.js';
-	import { nameKey, pairWithAI, receiptQuantity } from '$lib/receipts';
+	import { aiPairingNote, nameKey, pairWithAI, receiptQuantity } from '$lib/receipts';
 	import { finishShopping } from '$lib/shopping';
 	import type { Item, ReceiptPreview, ShoppingRecord } from '$lib/types';
 
@@ -56,7 +56,6 @@
 	let aiNote = $state<string | undefined>();
 	let pressedBackdrop = false;
 
-	const unpaired = $derived(lines.filter((line) => !line.itemID));
 	// Odskrtnute veci, ku ktorym na blocku nic nie je - do nakupu idu aj tak, len to clovek vidi.
 	const missing = $derived(bought.filter((item) => !lines.some((line) => line.itemID === item.id)));
 
@@ -70,6 +69,7 @@
 			already = undefined;
 			invalidTotal = false;
 			aiNote = undefined;
+			asking = false;
 			dialog.showModal();
 		} else if (!open && dialog.open) {
 			dialog.close();
@@ -101,14 +101,20 @@
 				include: !item.isDeposit
 			};
 		});
+
+		void askAI();
 	}
 
-	/** Model dostane len to, co este sparovane nie je - co uz clovek alebo pamat rozhodli, plati. */
+	/**
+	 * Hned po precitani blocku dostane model to, co este sparovane nie je - co uz pamat
+	 * rozhodla, plati, a co clovek sparuje, kym model rozmysla, tiez.
+	 */
 	async function askAI() {
 		const waiting = lines.filter((line) => !line.itemID);
 
-		if (asking || waiting.length === 0 || bought.length === 0) return;
+		if (waiting.length === 0 || bought.length === 0) return;
 
+		const asked = preview;
 		asking = true;
 		aiNote = undefined;
 
@@ -117,29 +123,22 @@
 				waiting.map((line) => line.receiptName),
 				bought.map((item) => item.name)
 			);
-			let paired = 0;
+
+			// Dialog mohol medzitym skoncit alebo precitat iny blocek.
+			if (preview !== asked) return;
 
 			for (const pair of pairs) {
 				const line = waiting[pair.line];
 
-				// Kym model rozmyslal, clovek mohol riadok sparovat sam - to ma prednost.
 				if (!line || line.itemID) continue;
 
 				line.itemID = bought[pair.item].id;
 				line.source = 'ai';
-				paired++;
 			}
-
-			aiNote = paired === 0 ? m.receipt_ai_nothing() : undefined;
 		} catch (error) {
-			aiNote =
-				error instanceof ApiError
-					? error.status === 503
-						? m.receipt_ai_off()
-						: m.receipt_ai_failed()
-					: m.receipt_offline();
+			if (preview === asked) aiNote = aiPairingNote(error);
 		} finally {
-			asking = false;
+			if (preview === asked) asking = false;
 		}
 	}
 
@@ -261,21 +260,13 @@
 
 				<p class="text-[13px] leading-snug text-tn-meta">{m.receipt_pair_hint()}</p>
 
-				{#if unpaired.length > 0 && bought.length > 0}
-					<div class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
-						<button
-							type="button"
-							onclick={askAI}
-							disabled={asking}
-							class="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-tn-tint px-3 text-[13.5px] font-bold text-tn-primary-strong transition hover:bg-muted disabled:cursor-wait disabled:opacity-60"
-						>
-							<SparklesIcon class="size-4" />
-							{asking ? m.receipt_ai_pending() : m.receipt_ai_pair()}
-						</button>
-						{#if aiNote}
-							<span class="text-[13px] text-tn-meta">{aiNote}</span>
-						{/if}
-					</div>
+				{#if asking || aiNote}
+					<p class="flex items-center gap-2 text-[13px] font-semibold text-tn-meta">
+						<SparklesIcon
+							class="size-4 flex-none text-tn-primary-strong {asking ? 'animate-pulse' : ''}"
+						/>
+						{asking ? m.receipt_ai_pending() : aiNote}
+					</p>
 				{/if}
 			</div>
 

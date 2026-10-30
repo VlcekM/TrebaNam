@@ -270,9 +270,7 @@
 	"receipt_pair_remembered": "remembered",
 	"receipt_pair_ai": "suggested by AI",
 	"receipt_pair_missing": "Not on the receipt, still in the trip: {names}",
-	"receipt_ai_pair": "Pair the rest with AI",
-	"receipt_ai_pending": "Asking the AI...",
-	"receipt_ai_nothing": "The AI found nothing more to pair.",
+	"receipt_ai_pending": "Pairing with AI...",
 	"receipt_ai_off": "AI pairing is not set up on the server.",
-	"receipt_ai_failed": "The AI did not answer. Try again or pair by hand."
+	"receipt_ai_failed": "The AI did not answer - pair by hand."
 }

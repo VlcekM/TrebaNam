@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import SparklesIcon from '@lucide/svelte/icons/sparkles';
 	import { ApiError } from '$lib/api';
 	import { categoryName } from '$lib/categories';
 	import ReceiptPriceField from '$lib/components/ReceiptPriceField.svelte';
@@ -9,7 +10,13 @@
 	import { ItemNameMaxLength, ItemQuantityMaxLength } from '$lib/items';
 	import { parseMoney } from '$lib/money';
 	import { m } from '$lib/paraglide/messages.js';
-	import { importReceipt, receiptQuantity } from '$lib/receipts';
+	import {
+		aiPairingNote,
+		importReceipt,
+		knownThings,
+		pairWithAI,
+		receiptQuantity
+	} from '$lib/receipts';
 	import type { Category, ReceiptPreview, ShoppingList, ShoppingRecord } from '$lib/types';
 
 	// Dva kroky v jednom dialogu: najprv sa blocek precita, potom sa ukaze, co na nom je,
@@ -31,6 +38,8 @@
 		quantity: string;
 		category: string;
 		price: number;
+		/** Nazov a skupinu navrhla AI podla veci, ktore domacnost uz pozna. */
+		source?: 'ai';
 	}
 
 	let dialog = $state<HTMLDialogElement>();
@@ -44,6 +53,8 @@
 	let failed = $state(false);
 	// Nakup z tohto blocku, ktory uz v historii je - z nahladu alebo z odmietnutia pri ulozeni.
 	let already = $state<string | undefined>();
+	let asking = $state(false);
+	let aiNote = $state<string | undefined>();
 	let pressedBackdrop = false;
 
 	const picked = $derived(rows.filter((row) => row.include && row.name.trim()));
@@ -68,6 +79,8 @@
 		listID = lists[0]?.id ?? '';
 		failed = false;
 		already = undefined;
+		asking = false;
+		aiNote = undefined;
 	}
 
 	function found(answer: ReceiptPreview) {
@@ -83,6 +96,55 @@
 			category: item.category,
 			price: item.price
 		}));
+
+		void askAI();
+	}
+
+	/**
+	 * Riadky, o ktorych domacnost este nic nepovedala, da model premenovat na veci, ktore uz pozna:
+	 * co stoji na jej zoznamoch a co uz kupovala. Nazov aj skupina idu z tej veci; co clovek
+	 * medzitym prepisal, ostava jeho.
+	 */
+	async function askAI() {
+		const asked = preview;
+		const waiting = rows
+			.map((row, index) => ({ row, from: asked?.items[index] }))
+			.filter(({ from }) => from && !from.remembered);
+
+		if (!asked || waiting.length === 0) return;
+
+		asking = true;
+		aiNote = undefined;
+
+		try {
+			const known = await knownThings(listID);
+
+			if (preview !== asked) return;
+			if (known.length === 0) return;
+
+			const pairs = await pairWithAI(
+				waiting.map(({ row }) => row.receiptName),
+				known.map((one) => one.name)
+			);
+
+			if (preview !== asked) return;
+
+			for (const pair of pairs) {
+				const { row, from } = waiting[pair.line] ?? {};
+				const thing = known[pair.item];
+
+				// Co clovek medzitym prepisal, model neprepise.
+				if (!row || !thing || row.name !== from?.name) continue;
+
+				row.name = thing.name;
+				if (categories.some((one) => one.code === thing.category)) row.category = thing.category;
+				row.source = 'ai';
+			}
+		} catch (error) {
+			if (preview === asked) aiNote = aiPairingNote(error);
+		} finally {
+			if (preview === asked) asking = false;
+		}
 	}
 
 	async function save() {
@@ -211,6 +273,15 @@
 				<ReceiptTotalField bind:amount invalid={invalidTotal} />
 
 				<p class="text-[13px] text-tn-meta">{m.receipt_review_hint()}</p>
+
+				{#if asking || aiNote}
+					<p class="flex items-center gap-2 text-[13px] font-semibold text-tn-meta">
+						<SparklesIcon
+							class="size-4 flex-none text-tn-primary-strong {asking ? 'animate-pulse' : ''}"
+						/>
+						{asking ? m.receipt_ai_pending() : aiNote}
+					</p>
+				{/if}
 			</div>
 
 			<ul class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 sm:px-6">
@@ -227,12 +298,22 @@
 							class="size-5 flex-none cursor-pointer accent-tn-primary"
 						/>
 
-						<input
-							bind:value={row.name}
-							maxlength={ItemNameMaxLength}
-							aria-label={m.item_name_label()}
-							class="h-10 min-w-0 flex-1 basis-40 rounded-lg border border-transparent bg-transparent px-2 font-bold outline-none hover:border-input focus-visible:border-tn-primary focus-visible:bg-background"
-						/>
+						<!-- Premenovane modelom ukaze aj nazov z blocku, aby sa dalo skontrolovat, co z coho je. -->
+						<div class="flex min-w-0 flex-1 basis-40 flex-col">
+							<input
+								bind:value={row.name}
+								oninput={() => (row.source = undefined)}
+								maxlength={ItemNameMaxLength}
+								aria-label={m.item_name_label()}
+								class="h-10 w-full min-w-0 rounded-lg border border-transparent bg-transparent px-2 font-bold outline-none hover:border-input focus-visible:border-tn-primary focus-visible:bg-background"
+							/>
+							{#if row.source === 'ai'}
+								<span class="truncate px-2 text-[12.5px] text-tn-faint">
+									{row.receiptName} ·
+									<span class="font-semibold text-tn-primary-strong">{m.receipt_pair_ai()}</span>
+								</span>
+							{/if}
+						</div>
 
 						<div
 							class="ml-8 flex flex-1 basis-full items-center gap-2 sm:ml-0 sm:flex-none sm:basis-auto"

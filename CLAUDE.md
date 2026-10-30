@@ -281,15 +281,20 @@ it was left) and the history import (each row as renamed). The preview returns t
 item whose name has the same key, so a remembered pair comes in already made. A newer decision
 overwrites the older one.
 
-"Pair the rest with AI" sends only the unpaired lines and the cart's names to
-`POST /api/receipts/pair`, which asks Claude through Anthropic's API (`ClaudeClient`, the
-`Anthropic` NuGet SDK, model `Anthropic:Model`, default `claude-haiku-5-5`, low effort). The answer
-is index pairs held to a JSON schema by structured outputs and checked against the lists sent. The
-suggestions only fill lines still unpaired when they arrive, show as "suggested by AI", and are not
-remembered until the trip is finished with them. The key is `Anthropic:ApiKey` - user-secrets in
-development, the `Anthropic__ApiKey` variable in production; without it the endpoint answers 503 and the button
-says AI pairing is not set up. It is behind sign-in and a household so it is not a free relay to
-the model.
+Whatever is still unpaired after the scan goes to the AI on its own, with no button to press: only
+the unpaired lines and the cart's names are sent to `POST /api/receipts/pair`, which asks Claude
+through Anthropic's API (`ClaudeClient`, the `Anthropic` NuGet SDK, model `Anthropic:Model`,
+default `claude-haiku-5-5`, low effort). The answer is index pairs held to a JSON schema by
+structured outputs and checked against the lists sent. The suggestions only fill lines still
+unpaired when they arrive, show as "suggested by AI", and are not remembered until the trip is
+finished with them. The history import asks the same endpoint as soon as its preview opens, for
+the lines the household has not decided on before, against the names it already knows - what is
+on its lists first, then what it has bought (`knownThings` in `src/lib/receipts.ts`); a matched
+line takes that thing's name and group, keeps the till's name under it with the AI badge, and is
+left alone if someone already retyped it. The key is `Anthropic:ApiKey` - user-secrets in
+development, the `Anthropic__ApiKey` variable in production; without it the endpoint answers 503
+and the dialog says AI pairing is not set up. It is behind sign-in and a household so it is not a
+free relay to the model.
 
 ## Households
 

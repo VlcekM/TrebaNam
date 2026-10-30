@@ -1,9 +1,12 @@
 import { get } from 'svelte/store';
-import { api } from '$lib/api';
+import { api, ApiError } from '$lib/api';
+import { fetchItemSuggestions } from '$lib/items';
 import { formatLocale } from '$lib/locale';
+import { loadJson } from '$lib/offline/net';
 import { newID, patchRecords, write } from '$lib/offline/queue';
+import { m } from '$lib/paraglide/messages.js';
 import { userStore } from '$lib/stores/user';
-import type { ReceiptPreview, ShoppingList, ShoppingRecord } from '$lib/types';
+import type { Item, ReceiptPreview, ShoppingList, ShoppingRecord } from '$lib/types';
 
 /**
  * Identifikator blocku z textu QR kodu. Online blocek z eKasy ma v kode "O-" a 32 sestnastkovych
@@ -115,6 +118,13 @@ export async function pairWithAI(lines: string[], items: string[]) {
 	return answer.pairs;
 }
 
+/** Co povedat, ked sa parovanie cez AI nepodarilo - parovat sa da aj tak, len rucne. */
+export function aiPairingNote(error: unknown) {
+	if (!(error instanceof ApiError)) return m.receipt_offline();
+
+	return error.status === 503 ? m.receipt_ai_off() : m.receipt_ai_failed();
+}
+
 /** To, co z BarcodeDetectora treba; TypeScript ho v DOM typoch este nema. */
 interface Detector {
 	detect(source: CanvasImageSource): Promise<{ rawValue: string }[]>;
@@ -168,4 +178,27 @@ export async function qrReader(): Promise<
 
 		return jsQR(image.data, image.width, image.height)?.data;
 	};
+}
+
+/** Kolko znamych veci modelu najviac posleme - viac server neprijme. */
+const MaxKnown = 200;
+
+/**
+ * Co domacnost pozna po mene, aby sa riadky blocku dali premenovat na jej veci: najprv to, co
+ * stoji na jej zoznamoch, potom to, co uz kupovala (navrhy k zoznamu, ktore to na nom vynechavaju).
+ */
+export async function knownThings(listID: string) {
+	const [items, suggestions] = await Promise.all([
+		loadJson<Item[]>('/api/items', fetch),
+		listID ? fetchItemSuggestions(listID) : Promise.resolve([])
+	]);
+	const known = new Map<string, { name: string; category: string }>();
+
+	for (const one of [...(items ?? []), ...suggestions]) {
+		const key = nameKey(one.name);
+
+		if (!known.has(key)) known.set(key, { name: one.name, category: one.category });
+	}
+
+	return [...known.values()].slice(0, MaxKnown);
 }
